@@ -5,7 +5,7 @@
  * NO-CODE VERSION FOR META ADS MANAGERS
  *
  * This script runs entirely in Google Sheets - no programming required.
- * Based on professional QA templates from GroupM, WPP Media, and CDT.
+ * Based on professional agency QA standards and Meta Ads best practices.
  *
  * SETUP INSTRUCTIONS:
  * 1. Create a new Google Sheet

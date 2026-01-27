@@ -55,12 +55,6 @@ meta-ads-quality-control/
 │   └── MetaQualityControl.gs (✅ 600+ lines)
 ├── scripts/
 │   └── _config.py (✅ Complete)
-├── audit templates/ (✅ 5 professional templates)
-│   ├── CDT Performance KPI Checklist.xlsx
-│   ├── GroupM Nexus_Social QA Checklist_April 2025_V1.xlsx
-│   ├── GroupM Paid Social QA Checklist Template.xlsx
-│   ├── GroupM_Paid Social Brief Template_Updated 21 Aug 2024.xlsx
-│   └── WPP Media_Cross Practice QA Checklist_2024 1 (2).xlsx
 ├── docs/ (created, needs content)
 ├── checklists/ (created, needs content)
 └── tests/ (created, needs content)
@@ -88,9 +82,9 @@ meta-ads-quality-control/
 
 ## Quality Checks Implemented
 
-### ✅ Based on Professional Agency Templates
+### ✅ Based on Professional Agency Standards
 
-#### Pre-Launch Checks (from GroupM/WPP):
+#### Pre-Launch Checks:
 - ✅ Account setup (currency, timezone, spending limits, audience controls)
 - ✅ Campaign configuration (naming, objectives, budget, bid strategy)
 - ✅ Targeting (location inclusion/exclusion, age restrictions, placement controls)
@@ -228,11 +222,10 @@ The Python scripts will provide:
 - Immediate alerts on failures
 
 ### ✅ Professional Standards
-Based on audit templates from:
-- GroupM Nexus
-- WPP Media
-- CDT
-- Industry best practices
+Based on:
+- Industry-leading agency audit standards
+- Meta Ads platform best practices
+- Performance marketing quality frameworks
 
 ---
 

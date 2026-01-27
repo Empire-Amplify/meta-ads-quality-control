@@ -5,7 +5,7 @@
 
 Scripts that audit your Meta (Facebook/Instagram) advertising accounts and identify issues before they impact performance.
 
-These scripts automate quality control checks based on industry-standard audit templates from GroupM, WPP Media, and other leading agencies.
+These scripts automate quality control checks based on industry-standard agency audit templates and Meta Ads best practices.
 
 ---
 
@@ -39,7 +39,7 @@ These scripts automate quality control checks based on industry-standard audit t
 
 ## What Gets Checked
 
-Based on professional agency QA templates (GroupM, WPP Media, CDT):
+Based on professional agency QA standards and Meta best practices:
 
 ### Pre-Launch Checks
 - **Account Setup**: Currency, timezone, spending limits, audience controls
@@ -464,7 +464,7 @@ No. All scripts are read-only and only report issues. No modifications are made 
 - Automated email alerts
 - Historical tracking in Google Sheets
 - Custom quality score based on agency standards
-- Based on professional QA templates (GroupM, WPP)
+- Based on professional QA best practices
 
 **What permissions do I need?**
 - Meta: `ads_read` permission (no write access needed)
