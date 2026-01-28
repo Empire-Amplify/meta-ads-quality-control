@@ -18,7 +18,11 @@ logger = logging.getLogger(__name__)
 class GoogleSheetsWriter:
     """Writer for Google Sheets output"""
 
-    def __init__(self, spreadsheet_id: Optional[str] = None, credentials_path: Optional[str] = None):
+    def __init__(
+        self,
+        spreadsheet_id: Optional[str] = None,
+        credentials_path: Optional[str] = None,
+    ):
         """
         Initialize Google Sheets writer
 
@@ -38,10 +42,12 @@ class GoogleSheetsWriter:
             # Load credentials and build service
             credentials = service_account.Credentials.from_service_account_file(
                 self.credentials_path,
-                scopes=['https://www.googleapis.com/auth/spreadsheets']
+                scopes=["https://www.googleapis.com/auth/spreadsheets"],
             )
-            self.service = build('sheets', 'v4', credentials=credentials)
-            logger.info(f"Initialized Google Sheets writer for spreadsheet: {self.spreadsheet_id}")
+            self.service = build("sheets", "v4", credentials=credentials)
+            logger.info(
+                f"Initialized Google Sheets writer for spreadsheet: {self.spreadsheet_id}"
+            )
         except Exception as e:
             logger.error(f"Error initializing Google Sheets: {e}")
             self.service = None
@@ -51,7 +57,7 @@ class GoogleSheetsWriter:
         health_score: int,
         account_name: str,
         issues_summary: Dict[str, int],
-        last_run: str
+        last_run: str,
     ) -> bool:
         """
         Write dashboard summary
@@ -71,21 +77,21 @@ class GoogleSheetsWriter:
         try:
             # Prepare data
             data = [
-                ['Meta Ads Quality Control Dashboard'],
-                [''],
-                ['Last Updated', last_run],
-                ['Account', account_name],
-                ['Health Score', health_score],
-                [''],
-                ['Issues Summary'],
-                ['Critical Issues', issues_summary.get('critical', 0)],
-                ['High Priority', issues_summary.get('high', 0)],
-                ['Medium Priority', issues_summary.get('medium', 0)],
-                ['Low Priority', issues_summary.get('low', 0)],
+                ["Meta Ads Quality Control Dashboard"],
+                [""],
+                ["Last Updated", last_run],
+                ["Account", account_name],
+                ["Health Score", health_score],
+                [""],
+                ["Issues Summary"],
+                ["Critical Issues", issues_summary.get("critical", 0)],
+                ["High Priority", issues_summary.get("high", 0)],
+                ["Medium Priority", issues_summary.get("medium", 0)],
+                ["Low Priority", issues_summary.get("low", 0)],
             ]
 
             # Write to Dashboard sheet
-            self._write_to_sheet('Dashboard', data, 'A1')
+            self._write_to_sheet("Dashboard", data, "A1")
 
             # Format dashboard
             self._format_dashboard()
@@ -111,41 +117,41 @@ class GoogleSheetsWriter:
         try:
             # Prepare headers
             headers = [
-                'Campaign Name',
-                'Status',
-                'Objective',
-                'Spend',
-                'Impressions',
-                'Clicks',
-                'Conversions',
-                'CPA',
-                'ROAS',
-                'Frequency',
-                'Health Status',
-                'Issues'
+                "Campaign Name",
+                "Status",
+                "Objective",
+                "Spend",
+                "Impressions",
+                "Clicks",
+                "Conversions",
+                "CPA",
+                "ROAS",
+                "Frequency",
+                "Health Status",
+                "Issues",
             ]
 
             # Prepare data rows
             data = [headers]
             for campaign in campaigns:
                 row = [
-                    campaign.get('name', ''),
-                    campaign.get('status', ''),
-                    campaign.get('objective', ''),
-                    campaign.get('spend', 0),
-                    campaign.get('impressions', 0),
-                    campaign.get('clicks', 0),
-                    campaign.get('conversions', 0),
-                    campaign.get('cpa', 0),
-                    campaign.get('roas', 0),
-                    campaign.get('frequency', 0),
-                    campaign.get('health_status', ''),
-                    campaign.get('issues', ''),
+                    campaign.get("name", ""),
+                    campaign.get("status", ""),
+                    campaign.get("objective", ""),
+                    campaign.get("spend", 0),
+                    campaign.get("impressions", 0),
+                    campaign.get("clicks", 0),
+                    campaign.get("conversions", 0),
+                    campaign.get("cpa", 0),
+                    campaign.get("roas", 0),
+                    campaign.get("frequency", 0),
+                    campaign.get("health_status", ""),
+                    campaign.get("issues", ""),
                 ]
                 data.append(row)
 
             # Write to Campaign Health sheet
-            self._write_to_sheet('Campaign Health', data, 'A1')
+            self._write_to_sheet("Campaign Health", data, "A1")
 
             return True
         except Exception as e:
@@ -167,33 +173,33 @@ class GoogleSheetsWriter:
 
         try:
             headers = [
-                'Ad Name',
-                'Campaign',
-                'Status',
-                'Frequency',
-                'Impressions',
-                'Reach',
-                'Days Running',
-                'Fatigue Level',
-                'Action Required'
+                "Ad Name",
+                "Campaign",
+                "Status",
+                "Frequency",
+                "Impressions",
+                "Reach",
+                "Days Running",
+                "Fatigue Level",
+                "Action Required",
             ]
 
             data = [headers]
             for ad in ads:
                 row = [
-                    ad.get('name', ''),
-                    ad.get('campaign_name', ''),
-                    ad.get('status', ''),
-                    ad.get('frequency', 0),
-                    ad.get('impressions', 0),
-                    ad.get('reach', 0),
-                    ad.get('days_running', 0),
-                    ad.get('fatigue_level', ''),
-                    ad.get('action_required', ''),
+                    ad.get("name", ""),
+                    ad.get("campaign_name", ""),
+                    ad.get("status", ""),
+                    ad.get("frequency", 0),
+                    ad.get("impressions", 0),
+                    ad.get("reach", 0),
+                    ad.get("days_running", 0),
+                    ad.get("fatigue_level", ""),
+                    ad.get("action_required", ""),
                 ]
                 data.append(row)
 
-            self._write_to_sheet('Creative Fatigue', data, 'A1')
+            self._write_to_sheet("Creative Fatigue", data, "A1")
 
             return True
         except Exception as e:
@@ -215,33 +221,33 @@ class GoogleSheetsWriter:
 
         try:
             headers = [
-                'Ad Set Name',
-                'Campaign',
-                'Status',
-                'Audience Size',
-                'Spend',
-                'Results',
-                'Cost per Result',
-                'Audience Health',
-                'Issues'
+                "Ad Set Name",
+                "Campaign",
+                "Status",
+                "Audience Size",
+                "Spend",
+                "Results",
+                "Cost per Result",
+                "Audience Health",
+                "Issues",
             ]
 
             data = [headers]
             for adset in adsets:
                 row = [
-                    adset.get('name', ''),
-                    adset.get('campaign_name', ''),
-                    adset.get('status', ''),
-                    adset.get('audience_size', 0),
-                    adset.get('spend', 0),
-                    adset.get('results', 0),
-                    adset.get('cost_per_result', 0),
-                    adset.get('audience_health', ''),
-                    adset.get('issues', ''),
+                    adset.get("name", ""),
+                    adset.get("campaign_name", ""),
+                    adset.get("status", ""),
+                    adset.get("audience_size", 0),
+                    adset.get("spend", 0),
+                    adset.get("results", 0),
+                    adset.get("cost_per_result", 0),
+                    adset.get("audience_health", ""),
+                    adset.get("issues", ""),
                 ]
                 data.append(row)
 
-            self._write_to_sheet('Audience Analysis', data, 'A1')
+            self._write_to_sheet("Audience Analysis", data, "A1")
 
             return True
         except Exception as e:
@@ -263,29 +269,29 @@ class GoogleSheetsWriter:
 
         try:
             headers = [
-                'Event Name',
-                'Event Type',
-                'Status',
-                'Pixel ID',
-                'Last Fired',
-                'Match Quality',
-                'Issues'
+                "Event Name",
+                "Event Type",
+                "Status",
+                "Pixel ID",
+                "Last Fired",
+                "Match Quality",
+                "Issues",
             ]
 
             data = [headers]
             for event in events:
                 row = [
-                    event.get('name', ''),
-                    event.get('event_type', ''),
-                    event.get('status', ''),
-                    event.get('pixel_id', ''),
-                    event.get('last_fired', ''),
-                    event.get('match_quality', ''),
-                    event.get('issues', ''),
+                    event.get("name", ""),
+                    event.get("event_type", ""),
+                    event.get("status", ""),
+                    event.get("pixel_id", ""),
+                    event.get("last_fired", ""),
+                    event.get("match_quality", ""),
+                    event.get("issues", ""),
                 ]
                 data.append(row)
 
-            self._write_to_sheet('Conversion Events', data, 'A1')
+            self._write_to_sheet("Conversion Events", data, "A1")
 
             return True
         except Exception as e:
@@ -307,38 +313,40 @@ class GoogleSheetsWriter:
 
         try:
             headers = [
-                'Timestamp',
-                'Severity',
-                'Category',
-                'Issue Type',
-                'Description',
-                'Affected Item',
-                'Recommendation',
-                'Status'
+                "Timestamp",
+                "Severity",
+                "Category",
+                "Issue Type",
+                "Description",
+                "Affected Item",
+                "Recommendation",
+                "Status",
             ]
 
             data = [headers]
             for issue in issues:
                 row = [
-                    issue.get('timestamp', datetime.now().isoformat()),
-                    issue.get('severity', ''),
-                    issue.get('category', ''),
-                    issue.get('type', ''),
-                    issue.get('description', ''),
-                    issue.get('affected_item', ''),
-                    issue.get('recommendation', ''),
-                    issue.get('status', 'Open'),
+                    issue.get("timestamp", datetime.now().isoformat()),
+                    issue.get("severity", ""),
+                    issue.get("category", ""),
+                    issue.get("type", ""),
+                    issue.get("description", ""),
+                    issue.get("affected_item", ""),
+                    issue.get("recommendation", ""),
+                    issue.get("status", "Open"),
                 ]
                 data.append(row)
 
-            self._write_to_sheet('Issues Log', data, 'A1')
+            self._write_to_sheet("Issues Log", data, "A1")
 
             return True
         except Exception as e:
             logger.error(f"Error writing issues log: {e}")
             return False
 
-    def _write_to_sheet(self, sheet_name: str, data: List[List[Any]], range_start: str = 'A1') -> bool:
+    def _write_to_sheet(
+        self, sheet_name: str, data: List[List[Any]], range_start: str = "A1"
+    ) -> bool:
         """
         Write data to specific sheet
 
@@ -356,19 +364,16 @@ class GoogleSheetsWriter:
 
             # Clear existing data
             self.service.spreadsheets().values().clear(
-                spreadsheetId=self.spreadsheet_id,
-                range=f"{sheet_name}!A1:Z1000"
+                spreadsheetId=self.spreadsheet_id, range=f"{sheet_name}!A1:Z1000"
             ).execute()
 
             # Write new data
-            body = {
-                'values': data
-            }
+            body = {"values": data}
             self.service.spreadsheets().values().update(
                 spreadsheetId=self.spreadsheet_id,
                 range=f"{sheet_name}!{range_start}",
-                valueInputOption='RAW',
-                body=body
+                valueInputOption="RAW",
+                body=body,
             ).execute()
 
             logger.info(f"Successfully wrote {len(data)} rows to {sheet_name}")
@@ -393,27 +398,22 @@ class GoogleSheetsWriter:
         """
         try:
             # Get existing sheets
-            sheet_metadata = self.service.spreadsheets().get(
-                spreadsheetId=self.spreadsheet_id
-            ).execute()
+            sheet_metadata = (
+                self.service.spreadsheets()
+                .get(spreadsheetId=self.spreadsheet_id)
+                .execute()
+            )
 
-            sheets = sheet_metadata.get('sheets', [])
-            sheet_names = [sheet['properties']['title'] for sheet in sheets]
+            sheets = sheet_metadata.get("sheets", [])
+            sheet_names = [sheet["properties"]["title"] for sheet in sheets]
 
             if sheet_name not in sheet_names:
                 # Create sheet
                 request_body = {
-                    'requests': [{
-                        'addSheet': {
-                            'properties': {
-                                'title': sheet_name
-                            }
-                        }
-                    }]
+                    "requests": [{"addSheet": {"properties": {"title": sheet_name}}}]
                 }
                 self.service.spreadsheets().batchUpdate(
-                    spreadsheetId=self.spreadsheet_id,
-                    body=request_body
+                    spreadsheetId=self.spreadsheet_id, body=request_body
                 ).execute()
                 logger.info(f"Created new sheet: {sheet_name}")
 
@@ -429,40 +429,36 @@ class GoogleSheetsWriter:
             requests = [
                 # Bold header
                 {
-                    'repeatCell': {
-                        'range': {
-                            'sheetId': self._get_sheet_id('Dashboard'),
-                            'startRowIndex': 0,
-                            'endRowIndex': 1,
+                    "repeatCell": {
+                        "range": {
+                            "sheetId": self._get_sheet_id("Dashboard"),
+                            "startRowIndex": 0,
+                            "endRowIndex": 1,
                         },
-                        'cell': {
-                            'userEnteredFormat': {
-                                'textFormat': {
-                                    'bold': True,
-                                    'fontSize': 14
-                                }
+                        "cell": {
+                            "userEnteredFormat": {
+                                "textFormat": {"bold": True, "fontSize": 14}
                             }
                         },
-                        'fields': 'userEnteredFormat.textFormat'
+                        "fields": "userEnteredFormat.textFormat",
                     }
                 },
                 # Auto-resize columns
                 {
-                    'autoResizeDimensions': {
-                        'dimensions': {
-                            'sheetId': self._get_sheet_id('Dashboard'),
-                            'dimension': 'COLUMNS',
-                            'startIndex': 0,
-                            'endIndex': 10
+                    "autoResizeDimensions": {
+                        "dimensions": {
+                            "sheetId": self._get_sheet_id("Dashboard"),
+                            "dimension": "COLUMNS",
+                            "startIndex": 0,
+                            "endIndex": 10,
                         }
                     }
-                }
+                },
             ]
 
-            body = {'requests': requests}
+            body = {"requests": requests}
             self.service.spreadsheets().batchUpdate(
-                spreadsheetId=self.spreadsheet_id,
-                body=body
+                spreadsheetId=self.spreadsheet_id, body=body
             ).execute()
 
             return True
@@ -473,14 +469,16 @@ class GoogleSheetsWriter:
     def _get_sheet_id(self, sheet_name: str) -> int:
         """Get sheet ID by name"""
         try:
-            sheet_metadata = self.service.spreadsheets().get(
-                spreadsheetId=self.spreadsheet_id
-            ).execute()
+            sheet_metadata = (
+                self.service.spreadsheets()
+                .get(spreadsheetId=self.spreadsheet_id)
+                .execute()
+            )
 
-            sheets = sheet_metadata.get('sheets', [])
+            sheets = sheet_metadata.get("sheets", [])
             for sheet in sheets:
-                if sheet['properties']['title'] == sheet_name:
-                    return sheet['properties']['sheetId']
+                if sheet["properties"]["title"] == sheet_name:
+                    return sheet["properties"]["sheetId"]
 
             return 0
         except Exception as e:

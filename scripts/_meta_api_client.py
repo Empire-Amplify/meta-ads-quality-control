@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 class MetaAPIClient:
     """Client for interacting with Meta Marketing API"""
 
-    def __init__(self, account_id: Optional[str] = None, access_token: Optional[str] = None):
+    def __init__(
+        self, account_id: Optional[str] = None, access_token: Optional[str] = None
+    ):
         """
         Initialize Meta API client
 
@@ -42,9 +44,7 @@ class MetaAPIClient:
         logger.info(f"Initialized Meta API client for account: {self.account_id}")
 
     def get_campaigns(
-        self,
-        statuses: Optional[List[str]] = None,
-        fields: Optional[List[str]] = None
+        self, statuses: Optional[List[str]] = None, fields: Optional[List[str]] = None
     ) -> List[Dict]:
         """
         Fetch campaigns from ad account
@@ -72,7 +72,7 @@ class MetaAPIClient:
 
         params = {}
         if statuses:
-            params['effective_status'] = statuses
+            params["effective_status"] = statuses
 
         try:
             campaigns = self.account.get_campaigns(fields=fields, params=params)
@@ -85,7 +85,7 @@ class MetaAPIClient:
         self,
         campaign_id: Optional[str] = None,
         statuses: Optional[List[str]] = None,
-        fields: Optional[List[str]] = None
+        fields: Optional[List[str]] = None,
     ) -> List[Dict]:
         """
         Fetch ad sets from campaign or account
@@ -117,7 +117,7 @@ class MetaAPIClient:
 
         params = {}
         if statuses:
-            params['effective_status'] = statuses
+            params["effective_status"] = statuses
 
         try:
             if campaign_id:
@@ -135,7 +135,7 @@ class MetaAPIClient:
         self,
         adset_id: Optional[str] = None,
         statuses: Optional[List[str]] = None,
-        fields: Optional[List[str]] = None
+        fields: Optional[List[str]] = None,
     ) -> List[Dict]:
         """
         Fetch ads from ad set or account
@@ -164,7 +164,7 @@ class MetaAPIClient:
 
         params = {}
         if statuses:
-            params['effective_status'] = statuses
+            params["effective_status"] = statuses
 
         try:
             if adset_id:
@@ -180,12 +180,12 @@ class MetaAPIClient:
 
     def get_insights(
         self,
-        level: str = 'account',
+        level: str = "account",
         object_id: Optional[str] = None,
-        date_preset: str = 'last_7d',
+        date_preset: str = "last_7d",
         time_range: Optional[Dict] = None,
         fields: Optional[List[str]] = None,
-        breakdowns: Optional[List[str]] = None
+        breakdowns: Optional[List[str]] = None,
     ) -> List[Dict]:
         """
         Fetch insights/metrics
@@ -220,25 +220,25 @@ class MetaAPIClient:
             ]
 
         params = {
-            'level': level,
+            "level": level,
         }
 
         if time_range:
-            params['time_range'] = time_range
+            params["time_range"] = time_range
         else:
-            params['date_preset'] = date_preset
+            params["date_preset"] = date_preset
 
         if breakdowns:
-            params['breakdowns'] = breakdowns
+            params["breakdowns"] = breakdowns
 
         try:
             if object_id:
                 # Get insights for specific object
-                if level == 'campaign':
+                if level == "campaign":
                     obj = Campaign(object_id)
-                elif level == 'adset':
+                elif level == "adset":
                     obj = AdSet(object_id)
-                elif level == 'ad':
+                elif level == "ad":
                     obj = Ad(object_id)
                 else:
                     obj = self.account
@@ -261,14 +261,14 @@ class MetaAPIClient:
         """
         try:
             params = {
-                'fields': [
-                    'id',
-                    'name',
-                    'status',
-                    'event_type',
-                    'custom_event_type',
-                    'pixel',
-                    'is_archived',
+                "fields": [
+                    "id",
+                    "name",
+                    "status",
+                    "event_type",
+                    "custom_event_type",
+                    "pixel",
+                    "is_archived",
                 ]
             }
             events = self.account.get_custom_conversions(params=params)
@@ -286,12 +286,12 @@ class MetaAPIClient:
         """
         try:
             params = {
-                'fields': [
-                    'id',
-                    'name',
-                    'code',
-                    'is_unavailable',
-                    'last_fired_time',
+                "fields": [
+                    "id",
+                    "name",
+                    "code",
+                    "is_unavailable",
+                    "last_fired_time",
                 ]
             }
             pixels = self.account.get_ads_pixels(params=params)
@@ -313,8 +313,8 @@ class MetaAPIClient:
         """
         try:
             params = {
-                'targeting_spec': targeting,
-                'optimization_goal': optimization_goal,
+                "targeting_spec": targeting,
+                "optimization_goal": optimization_goal,
             }
             estimate = self.account.get_delivery_estimate(params=params)
             return dict(estimate[0]) if estimate else {}
@@ -331,14 +331,14 @@ class MetaAPIClient:
         """
         try:
             fields = [
-                'account_status',
-                'disable_reason',
-                'business_country_code',
-                'currency',
-                'timezone_name',
-                'amount_spent',
-                'balance',
-                'spend_cap',
+                "account_status",
+                "disable_reason",
+                "business_country_code",
+                "currency",
+                "timezone_name",
+                "amount_spent",
+                "balance",
+                "spend_cap",
             ]
             account_info = self.account.api_get(fields=fields)
             return dict(account_info)
@@ -360,6 +360,6 @@ class MetaAPIClient:
         start_date = end_date - timedelta(days=days)
 
         return {
-            'since': start_date.strftime('%Y-%m-%d'),
-            'until': end_date.strftime('%Y-%m-%d'),
+            "since": start_date.strftime("%Y-%m-%d"),
+            "until": end_date.strftime("%Y-%m-%d"),
         }

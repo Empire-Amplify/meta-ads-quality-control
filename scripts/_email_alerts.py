@@ -33,7 +33,7 @@ class EmailAlertHandler:
         subject: str,
         body: str,
         issues: Optional[List[Dict]] = None,
-        health_score: Optional[int] = None
+        health_score: Optional[int] = None,
     ) -> bool:
         """
         Send email alert
@@ -71,7 +71,7 @@ class EmailAlertHandler:
         self,
         body: str,
         issues: Optional[List[Dict]] = None,
-        health_score: Optional[int] = None
+        health_score: Optional[int] = None,
     ) -> str:
         """Build HTML email content"""
 
@@ -163,7 +163,7 @@ class EmailAlertHandler:
                     <h2>Issues Detected</h2>
             """
             for issue in issues:
-                severity = issue.get('severity', 'medium')
+                severity = issue.get("severity", "medium")
                 html += f"""
                     <div class="issue {severity}">
                         <div class="issue-title">
@@ -191,15 +191,15 @@ class EmailAlertHandler:
     def _get_score_class(self, score: int) -> str:
         """Get CSS class based on health score"""
         if score >= 90:
-            return 'excellent'
+            return "excellent"
         elif score >= 80:
-            return 'good'
+            return "good"
         elif score >= 70:
-            return 'fair'
+            return "fair"
         elif score >= 60:
-            return 'poor'
+            return "poor"
         else:
-            return 'critical'
+            return "critical"
 
     def _send_via_sendgrid(self, subject: str, html_body: str) -> bool:
         """
@@ -218,21 +218,17 @@ class EmailAlertHandler:
             url = "https://api.sendgrid.com/v3/mail/send"
             headers = {
                 "Authorization": f"Bearer {self.sendgrid_api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             }
             data = {
-                "personalizations": [{
-                    "to": [{"email": self.email_address}],
-                    "subject": subject
-                }],
+                "personalizations": [
+                    {"to": [{"email": self.email_address}], "subject": subject}
+                ],
                 "from": {
                     "email": "noreply@empireamplify.com.au",
-                    "name": "Meta Ads Quality Control"
+                    "name": "Meta Ads Quality Control",
                 },
-                "content": [{
-                    "type": "text/html",
-                    "value": html_body
-                }]
+                "content": [{"type": "text/html", "value": html_body}],
             }
 
             response = requests.post(url, headers=headers, json=data)
@@ -241,7 +237,9 @@ class EmailAlertHandler:
                 logger.info("Email sent successfully via SendGrid")
                 return True
             else:
-                logger.error(f"SendGrid API error: {response.status_code} - {response.text}")
+                logger.error(
+                    f"SendGrid API error: {response.status_code} - {response.text}"
+                )
                 return False
 
         except Exception as e:
@@ -254,7 +252,7 @@ class EmailAlertHandler:
         health_score: int,
         critical_issues: List[Dict],
         high_issues: List[Dict],
-        summary: str
+        summary: str,
     ) -> bool:
         """
         Send daily health check summary
@@ -283,10 +281,7 @@ class EmailAlertHandler:
         all_issues = critical_issues + high_issues
 
         return self.send_alert(
-            subject=subject,
-            body=body,
-            issues=all_issues,
-            health_score=health_score
+            subject=subject, body=body, issues=all_issues, health_score=health_score
         )
 
     def send_critical_alert(
@@ -294,7 +289,7 @@ class EmailAlertHandler:
         issue_type: str,
         description: str,
         recommendation: str,
-        affected_items: List[str]
+        affected_items: List[str],
     ) -> bool:
         """
         Send immediate critical alert
@@ -325,18 +320,16 @@ class EmailAlertHandler:
                 body += f"<li>... and {len(affected_items) - 10} more</li>"
             body += "</ul>"
 
-        issues = [{
-            'category': issue_type,
-            'description': description,
-            'recommendation': recommendation,
-            'severity': 'critical'
-        }]
+        issues = [
+            {
+                "category": issue_type,
+                "description": description,
+                "recommendation": recommendation,
+                "severity": "critical",
+            }
+        ]
 
-        return self.send_alert(
-            subject=subject,
-            body=body,
-            issues=issues
-        )
+        return self.send_alert(subject=subject, body=body, issues=issues)
 
 
 # Convenience function for simple alerts

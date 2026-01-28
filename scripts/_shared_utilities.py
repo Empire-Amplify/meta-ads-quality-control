@@ -90,15 +90,14 @@ def extract_metric_from_actions(actions: List[Dict], action_type: str) -> int:
         return 0
 
     for action in actions:
-        if action.get('action_type') == action_type:
-            return int(action.get('value', 0))
+        if action.get("action_type") == action_type:
+            return int(action.get("value", 0))
 
     return 0
 
 
 def extract_value_from_action_values(
-    action_values: List[Dict],
-    action_type: str
+    action_values: List[Dict], action_type: str
 ) -> float:
     """
     Extract conversion value from Meta's action_values array
@@ -114,17 +113,14 @@ def extract_value_from_action_values(
         return 0.0
 
     for action_value in action_values:
-        if action_value.get('action_type') == action_type:
-            return float(action_value.get('value', 0))
+        if action_value.get("action_type") == action_type:
+            return float(action_value.get("value", 0))
 
     return 0.0
 
 
 def calculate_budget_pacing(
-    spent: float,
-    budget: float,
-    days_elapsed: int,
-    total_days: int
+    spent: float, budget: float, days_elapsed: int, total_days: int
 ) -> Dict[str, Any]:
     """
     Calculate budget pacing metrics
@@ -140,36 +136,38 @@ def calculate_budget_pacing(
     """
     if total_days == 0 or budget == 0:
         return {
-            'pacing_rate': 0,
-            'expected_spend': 0,
-            'variance': 0,
-            'status': 'unknown',
+            "pacing_rate": 0,
+            "expected_spend": 0,
+            "variance": 0,
+            "status": "unknown",
         }
 
     expected_spend = (budget / total_days) * days_elapsed
-    variance = ((spent - expected_spend) / expected_spend * 100) if expected_spend > 0 else 0
+    variance = (
+        ((spent - expected_spend) / expected_spend * 100) if expected_spend > 0 else 0
+    )
 
     # Determine status
     if variance < -20:
-        status = 'underpacing'
+        status = "underpacing"
     elif variance > 20:
-        status = 'overpacing'
+        status = "overpacing"
     else:
-        status = 'on_track'
+        status = "on_track"
 
     return {
-        'pacing_rate': (spent / budget * 100) if budget > 0 else 0,
-        'expected_spend': expected_spend,
-        'variance': variance,
-        'status': status,
-        'projected_total': (spent / days_elapsed * total_days) if days_elapsed > 0 else 0,
+        "pacing_rate": (spent / budget * 100) if budget > 0 else 0,
+        "expected_spend": expected_spend,
+        "variance": variance,
+        "status": status,
+        "projected_total": (
+            (spent / days_elapsed * total_days) if days_elapsed > 0 else 0
+        ),
     }
 
 
 def detect_anomaly(
-    current_value: float,
-    historical_values: List[float],
-    threshold: float = 0.5
+    current_value: float, historical_values: List[float], threshold: float = 0.5
 ) -> Dict[str, Any]:
     """
     Detect if current value is an anomaly compared to historical data
@@ -184,9 +182,9 @@ def detect_anomaly(
     """
     if not historical_values or len(historical_values) < 2:
         return {
-            'is_anomaly': False,
-            'deviation': 0,
-            'severity': 'normal',
+            "is_anomaly": False,
+            "deviation": 0,
+            "severity": "normal",
         }
 
     mean = statistics.mean(historical_values)
@@ -201,20 +199,20 @@ def detect_anomaly(
 
     # Determine severity
     if abs(deviation) > 1.0:
-        severity = 'critical'
+        severity = "critical"
     elif abs(deviation) > threshold:
-        severity = 'warning'
+        severity = "warning"
     else:
-        severity = 'normal'
+        severity = "normal"
 
     return {
-        'is_anomaly': is_anomaly,
-        'deviation': deviation,
-        'deviation_percent': deviation * 100,
-        'severity': severity,
-        'mean': mean,
-        'stdev': stdev,
-        'direction': 'increase' if deviation > 0 else 'decrease',
+        "is_anomaly": is_anomaly,
+        "deviation": deviation,
+        "deviation_percent": deviation * 100,
+        "severity": severity,
+        "mean": mean,
+        "stdev": stdev,
+        "direction": "increase" if deviation > 0 else "decrease",
     }
 
 
@@ -224,7 +222,7 @@ def calculate_health_score(
     creative_health_score: float,
     audience_quality_score: float,
     conversion_tracking_score: float,
-    performance_score: float
+    performance_score: float,
 ) -> Dict[str, Any]:
     """
     Calculate overall health score from component scores
@@ -241,50 +239,47 @@ def calculate_health_score(
         Dictionary with health score and grade
     """
     total_score = (
-        account_setup_score +
-        campaign_structure_score +
-        creative_health_score +
-        audience_quality_score +
-        conversion_tracking_score +
-        performance_score
+        account_setup_score
+        + campaign_structure_score
+        + creative_health_score
+        + audience_quality_score
+        + conversion_tracking_score
+        + performance_score
     )
 
     # Determine grade
     if total_score >= 90:
-        grade = 'A'
-        status = 'Excellent'
+        grade = "A"
+        status = "Excellent"
     elif total_score >= 80:
-        grade = 'B'
-        status = 'Good'
+        grade = "B"
+        status = "Good"
     elif total_score >= 70:
-        grade = 'C'
-        status = 'Fair'
+        grade = "C"
+        status = "Fair"
     elif total_score >= 60:
-        grade = 'D'
-        status = 'Poor'
+        grade = "D"
+        status = "Poor"
     else:
-        grade = 'F'
-        status = 'Critical'
+        grade = "F"
+        status = "Critical"
 
     return {
-        'total_score': round(total_score, 1),
-        'grade': grade,
-        'status': status,
-        'components': {
-            'account_setup': account_setup_score,
-            'campaign_structure': campaign_structure_score,
-            'creative_health': creative_health_score,
-            'audience_quality': audience_quality_score,
-            'conversion_tracking': conversion_tracking_score,
-            'performance': performance_score,
+        "total_score": round(total_score, 1),
+        "grade": grade,
+        "status": status,
+        "components": {
+            "account_setup": account_setup_score,
+            "campaign_structure": campaign_structure_score,
+            "creative_health": creative_health_score,
+            "audience_quality": audience_quality_score,
+            "conversion_tracking": conversion_tracking_score,
+            "performance": performance_score,
         },
     }
 
 
-def categorize_issue(
-    issue_type: str,
-    severity: str = 'medium'
-) -> Dict[str, str]:
+def categorize_issue(issue_type: str, severity: str = "medium") -> Dict[str, str]:
     """
     Categorize and provide recommendations for issues
 
@@ -296,88 +291,91 @@ def categorize_issue(
         Dictionary with issue details and recommendations
     """
     issue_catalog = {
-        'high_frequency': {
-            'category': 'Creative Fatigue',
-            'recommendation': 'Refresh creative assets or pause ad to prevent audience burnout',
-            'default_severity': 'high',
+        "high_frequency": {
+            "category": "Creative Fatigue",
+            "recommendation": "Refresh creative assets or pause ad to prevent audience burnout",
+            "default_severity": "high",
         },
-        'critical_frequency': {
-            'category': 'Creative Fatigue',
-            'recommendation': 'Immediate creative refresh required - audience is severely fatigued',
-            'default_severity': 'critical',
+        "critical_frequency": {
+            "category": "Creative Fatigue",
+            "recommendation": "Immediate creative refresh required - audience is severely fatigued",
+            "default_severity": "critical",
         },
-        'high_cpa': {
-            'category': 'Performance',
-            'recommendation': 'Review targeting, creative, or pause campaign if CPA remains high',
-            'default_severity': 'high',
+        "high_cpa": {
+            "category": "Performance",
+            "recommendation": "Review targeting, creative, or pause campaign if CPA remains high",
+            "default_severity": "high",
         },
-        'low_roas': {
-            'category': 'Performance',
-            'recommendation': 'Optimize targeting, creative, or bid strategy to improve returns',
-            'default_severity': 'high',
+        "low_roas": {
+            "category": "Performance",
+            "recommendation": "Optimize targeting, creative, or bid strategy to improve returns",
+            "default_severity": "high",
         },
-        'small_audience': {
-            'category': 'Audience',
-            'recommendation': 'Expand targeting to increase potential reach',
-            'default_severity': 'medium',
+        "small_audience": {
+            "category": "Audience",
+            "recommendation": "Expand targeting to increase potential reach",
+            "default_severity": "medium",
         },
-        'large_audience': {
-            'category': 'Audience',
-            'recommendation': 'Narrow targeting for better performance and efficiency',
-            'default_severity': 'medium',
+        "large_audience": {
+            "category": "Audience",
+            "recommendation": "Narrow targeting for better performance and efficiency",
+            "default_severity": "medium",
         },
-        'no_pixel': {
-            'category': 'Tracking',
-            'recommendation': 'Install Meta Pixel to track conversions and optimize delivery',
-            'default_severity': 'critical',
+        "no_pixel": {
+            "category": "Tracking",
+            "recommendation": "Install Meta Pixel to track conversions and optimize delivery",
+            "default_severity": "critical",
         },
-        'pixel_not_firing': {
-            'category': 'Tracking',
-            'recommendation': 'Check pixel implementation - no recent events detected',
-            'default_severity': 'critical',
+        "pixel_not_firing": {
+            "category": "Tracking",
+            "recommendation": "Check pixel implementation - no recent events detected",
+            "default_severity": "critical",
         },
-        'low_match_quality': {
-            'category': 'Tracking',
-            'recommendation': 'Improve event match quality by sending more customer information',
-            'default_severity': 'high',
+        "low_match_quality": {
+            "category": "Tracking",
+            "recommendation": "Improve event match quality by sending more customer information",
+            "default_severity": "high",
         },
-        'no_conversions': {
-            'category': 'Performance',
-            'recommendation': 'Review conversion setup, targeting, and creative effectiveness',
-            'default_severity': 'high',
+        "no_conversions": {
+            "category": "Performance",
+            "recommendation": "Review conversion setup, targeting, and creative effectiveness",
+            "default_severity": "high",
         },
-        'budget_exhausted': {
-            'category': 'Budget',
-            'recommendation': 'Increase budget or pause low-performing campaigns',
-            'default_severity': 'high',
+        "budget_exhausted": {
+            "category": "Budget",
+            "recommendation": "Increase budget or pause low-performing campaigns",
+            "default_severity": "high",
         },
-        'underspending': {
-            'category': 'Budget',
-            'recommendation': 'Check delivery issues, increase bids, or expand targeting',
-            'default_severity': 'medium',
+        "underspending": {
+            "category": "Budget",
+            "recommendation": "Check delivery issues, increase bids, or expand targeting",
+            "default_severity": "medium",
         },
-        'disapproved_ads': {
-            'category': 'Compliance',
-            'recommendation': 'Review ad content against Meta policies and resubmit',
-            'default_severity': 'critical',
+        "disapproved_ads": {
+            "category": "Compliance",
+            "recommendation": "Review ad content against Meta policies and resubmit",
+            "default_severity": "critical",
         },
     }
 
-    issue_info = issue_catalog.get(issue_type, {
-        'category': 'Other',
-        'recommendation': 'Review and address issue',
-        'default_severity': severity,
-    })
+    issue_info = issue_catalog.get(
+        issue_type,
+        {
+            "category": "Other",
+            "recommendation": "Review and address issue",
+            "default_severity": severity,
+        },
+    )
 
     return {
-        'type': issue_type,
-        'category': issue_info['category'],
-        'severity': severity or issue_info['default_severity'],
-        'recommendation': issue_info['recommendation'],
+        "type": issue_type,
+        "category": issue_info["category"],
+        "severity": severity or issue_info["default_severity"],
+        "recommendation": issue_info["recommendation"],
     }
 
 
-def format_currency(amount: float, currency: str = 'USD') -> str:
+def format_currency(amount: float, currency: str = "USD") -> str:
     """
     Format amount as currency
 
@@ -388,13 +386,13 @@ def format_currency(amount: float, currency: str = 'USD') -> str:
     Returns:
         Formatted currency string
     """
-    if currency == 'USD':
+    if currency == "USD":
         return f"${amount:,.2f}"
-    elif currency == 'EUR':
+    elif currency == "EUR":
         return f"€{amount:,.2f}"
-    elif currency == 'GBP':
+    elif currency == "GBP":
         return f"£{amount:,.2f}"
-    elif currency == 'AUD':
+    elif currency == "AUD":
         return f"A${amount:,.2f}"
     else:
         return f"{amount:,.2f} {currency}"
@@ -427,21 +425,21 @@ def parse_date_range(date_preset: str) -> Dict[str, str]:
     end_date = datetime.now()
 
     days_map = {
-        'today': 0,
-        'yesterday': 1,
-        'last_3d': 3,
-        'last_7d': 7,
-        'last_14d': 14,
-        'last_30d': 30,
-        'last_90d': 90,
+        "today": 0,
+        "yesterday": 1,
+        "last_3d": 3,
+        "last_7d": 7,
+        "last_14d": 14,
+        "last_30d": 30,
+        "last_90d": 90,
     }
 
     days = days_map.get(date_preset, 7)
     start_date = end_date - timedelta(days=days)
 
     return {
-        'since': start_date.strftime('%Y-%m-%d'),
-        'until': end_date.strftime('%Y-%m-%d'),
+        "since": start_date.strftime("%Y-%m-%d"),
+        "until": end_date.strftime("%Y-%m-%d"),
     }
 
 
