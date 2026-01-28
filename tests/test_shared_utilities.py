@@ -3,21 +3,21 @@ Test suite for _shared_utilities.py
 Tests core utility functions for Meta Ads Quality Control
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
 import pytest
 from _shared_utilities import (
+    calculate_budget_pacing,
     calculate_cpa,
-    calculate_roas,
     calculate_ctr,
     calculate_frequency,
+    calculate_roas,
+    detect_anomaly,
     extract_metric_from_actions,
     extract_value_from_action_values,
-    calculate_budget_pacing,
-    detect_anomaly,
 )
 
 
@@ -122,9 +122,7 @@ class TestBudgetPacing:
 
     def test_budget_pacing_on_track(self):
         """Test budget pacing when on track"""
-        result = calculate_budget_pacing(
-            spent=500.0, budget=1000.0, days_elapsed=15, total_days=30
-        )
+        result = calculate_budget_pacing(spent=500.0, budget=1000.0, days_elapsed=15, total_days=30)
         assert result["status"] == "on_track"
         assert result["pacing_rate"] == 50.0
         assert result["expected_spend"] == pytest.approx(500.0, rel=1e-6)
@@ -132,33 +130,25 @@ class TestBudgetPacing:
 
     def test_budget_pacing_underpacing(self):
         """Test budget pacing when underpacing"""
-        result = calculate_budget_pacing(
-            spent=300.0, budget=1000.0, days_elapsed=15, total_days=30
-        )
+        result = calculate_budget_pacing(spent=300.0, budget=1000.0, days_elapsed=15, total_days=30)
         assert result["status"] == "underpacing"
         assert result["variance"] < -20
 
     def test_budget_pacing_overpacing(self):
         """Test budget pacing when overpacing"""
-        result = calculate_budget_pacing(
-            spent=700.0, budget=1000.0, days_elapsed=15, total_days=30
-        )
+        result = calculate_budget_pacing(spent=700.0, budget=1000.0, days_elapsed=15, total_days=30)
         assert result["status"] == "overpacing"
         assert result["variance"] > 20
 
     def test_budget_pacing_zero_days(self):
         """Test budget pacing with zero days"""
-        result = calculate_budget_pacing(
-            spent=500.0, budget=1000.0, days_elapsed=0, total_days=0
-        )
+        result = calculate_budget_pacing(spent=500.0, budget=1000.0, days_elapsed=0, total_days=0)
         assert result["status"] == "unknown"
         assert result["pacing_rate"] == 0
 
     def test_budget_pacing_zero_budget(self):
         """Test budget pacing with zero budget"""
-        result = calculate_budget_pacing(
-            spent=500.0, budget=0.0, days_elapsed=15, total_days=30
-        )
+        result = calculate_budget_pacing(spent=500.0, budget=0.0, days_elapsed=15, total_days=30)
         assert result["status"] == "unknown"
 
 
@@ -209,17 +199,13 @@ class TestAnomalyDetection:
 
     def test_detect_anomaly_insufficient_data(self):
         """Test anomaly detection with insufficient historical data"""
-        result = detect_anomaly(
-            current_value=100.0, historical_values=[], threshold=0.5
-        )
+        result = detect_anomaly(current_value=100.0, historical_values=[], threshold=0.5)
         assert result["is_anomaly"] is False
         assert result["deviation"] == 0
 
     def test_detect_anomaly_single_historical_value(self):
         """Test anomaly detection with single historical value"""
-        result = detect_anomaly(
-            current_value=150.0, historical_values=[100.0], threshold=0.5
-        )
+        result = detect_anomaly(current_value=150.0, historical_values=[100.0], threshold=0.5)
         # With single value (< 2), function returns early with no anomaly
         assert result["is_anomaly"] is False
         assert result["deviation"] == 0

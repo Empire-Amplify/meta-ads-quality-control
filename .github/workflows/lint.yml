@@ -24,10 +24,10 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Check formatting with Black
-      run: black --check --diff .
+      run: black --check --diff --line-length 127 .
 
     - name: Check import sorting with isort
-      run: isort --check-only --diff .
+      run: isort --check-only --diff --profile black .
 
     - name: Lint with flake8
       run: |

@@ -3,17 +3,17 @@ Meta Marketing API Client
 Wrapper for Meta Marketing API operations
 """
 
-from facebook_business.api import FacebookAdsApi
-from facebook_business.adobjects.adaccount import AdAccount
-from facebook_business.adobjects.campaign import Campaign
-from facebook_business.adobjects.adset import AdSet
-from facebook_business.adobjects.ad import Ad
-from facebook_business.adobjects.adsinsights import AdsInsights
-from typing import List, Dict, Optional
 import logging
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional
 
 from _config import Config
+from facebook_business.adobjects.ad import Ad
+from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.adobjects.adset import AdSet
+from facebook_business.adobjects.adsinsights import AdsInsights
+from facebook_business.adobjects.campaign import Campaign
+from facebook_business.api import FacebookAdsApi
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 class MetaAPIClient:
     """Client for interacting with Meta Marketing API"""
 
-    def __init__(
-        self, account_id: Optional[str] = None, access_token: Optional[str] = None
-    ):
+    def __init__(self, account_id: Optional[str] = None, access_token: Optional[str] = None):
         """
         Initialize Meta API client
 
@@ -43,9 +41,7 @@ class MetaAPIClient:
 
         logger.info(f"Initialized Meta API client for account: {self.account_id}")
 
-    def get_campaigns(
-        self, statuses: Optional[List[str]] = None, fields: Optional[List[str]] = None
-    ) -> List[Dict]:
+    def get_campaigns(self, statuses: Optional[List[str]] = None, fields: Optional[List[str]] = None) -> List[Dict]:
         """
         Fetch campaigns from ad account
 

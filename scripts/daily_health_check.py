@@ -8,14 +8,14 @@ from datetime import datetime
 from typing import Dict, List
 
 from _config import Config
+from _email_alerts import EmailAlertHandler
 from _meta_api_client import MetaAPIClient
 from _shared_utilities import (
-    calculate_frequency,
     calculate_cpa,
-    extract_metric_from_actions,
+    calculate_frequency,
     categorize_issue,
+    extract_metric_from_actions,
 )
-from _email_alerts import EmailAlertHandler
 from _sheets_writer import GoogleSheetsWriter
 
 # Configure logging
@@ -227,9 +227,7 @@ def check_creative_fatigue(api_client: MetaAPIClient) -> List[Dict]:
                 # Only check ads with meaningful spend
                 if spend >= Config.MIN_SPEND_FOR_ANALYSIS:
                     if frequency >= Config.FREQUENCY_CRITICAL_THRESHOLD:
-                        issue = categorize_issue(
-                            "critical_frequency", severity="critical"
-                        )
+                        issue = categorize_issue("critical_frequency", severity="critical")
                         issue.update(
                             {
                                 "description": f"Ad '{ad['name']}' has critical frequency: {frequency:.2f}",

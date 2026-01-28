@@ -3,10 +3,10 @@ Shared Utilities for Meta Ads Quality Control Scripts
 Common functions used across multiple scripts
 """
 
-from typing import Dict, List, Optional, Any
+import logging
 import statistics
 from datetime import datetime, timedelta
-import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +96,7 @@ def extract_metric_from_actions(actions: List[Dict], action_type: str) -> int:
     return 0
 
 
-def extract_value_from_action_values(
-    action_values: List[Dict], action_type: str
-) -> float:
+def extract_value_from_action_values(action_values: List[Dict], action_type: str) -> float:
     """
     Extract conversion value from Meta's action_values array
 
@@ -119,9 +117,7 @@ def extract_value_from_action_values(
     return 0.0
 
 
-def calculate_budget_pacing(
-    spent: float, budget: float, days_elapsed: int, total_days: int
-) -> Dict[str, Any]:
+def calculate_budget_pacing(spent: float, budget: float, days_elapsed: int, total_days: int) -> Dict[str, Any]:
     """
     Calculate budget pacing metrics
 
@@ -143,9 +139,7 @@ def calculate_budget_pacing(
         }
 
     expected_spend = (budget / total_days) * days_elapsed
-    variance = (
-        ((spent - expected_spend) / expected_spend * 100) if expected_spend > 0 else 0
-    )
+    variance = ((spent - expected_spend) / expected_spend * 100) if expected_spend > 0 else 0
 
     # Determine status
     if variance < -20:
@@ -160,15 +154,11 @@ def calculate_budget_pacing(
         "expected_spend": expected_spend,
         "variance": variance,
         "status": status,
-        "projected_total": (
-            (spent / days_elapsed * total_days) if days_elapsed > 0 else 0
-        ),
+        "projected_total": ((spent / days_elapsed * total_days) if days_elapsed > 0 else 0),
     }
 
 
-def detect_anomaly(
-    current_value: float, historical_values: List[float], threshold: float = 0.5
-) -> Dict[str, Any]:
+def detect_anomaly(current_value: float, historical_values: List[float], threshold: float = 0.5) -> Dict[str, Any]:
     """
     Detect if current value is an anomaly compared to historical data
 

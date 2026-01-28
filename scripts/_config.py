@@ -4,8 +4,9 @@ Loads settings from environment variables with validation
 """
 
 import os
-from dotenv import load_dotenv
 from typing import Optional
+
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -32,12 +33,8 @@ class Config:
     SLACK_WEBHOOK_URL: str = os.getenv("SLACK_WEBHOOK_URL", "")
 
     # Quality thresholds
-    FREQUENCY_ALERT_THRESHOLD: float = float(
-        os.getenv("FREQUENCY_ALERT_THRESHOLD", "2.5")
-    )
-    FREQUENCY_CRITICAL_THRESHOLD: float = float(
-        os.getenv("FREQUENCY_CRITICAL_THRESHOLD", "3.5")
-    )
+    FREQUENCY_ALERT_THRESHOLD: float = float(os.getenv("FREQUENCY_ALERT_THRESHOLD", "2.5"))
+    FREQUENCY_CRITICAL_THRESHOLD: float = float(os.getenv("FREQUENCY_CRITICAL_THRESHOLD", "3.5"))
     CPA_THRESHOLD: float = float(os.getenv("CPA_THRESHOLD", "50"))
     MIN_ROAS: float = float(os.getenv("MIN_ROAS", "2.0"))
     MIN_CTR: float = float(os.getenv("MIN_CTR", "0.8"))
@@ -46,9 +43,7 @@ class Config:
     # Audience thresholds
     MIN_AUDIENCE_SIZE: int = int(os.getenv("MIN_AUDIENCE_SIZE", "1000"))
     MAX_AUDIENCE_SIZE: int = int(os.getenv("MAX_AUDIENCE_SIZE", "50000000"))
-    AUDIENCE_OVERLAP_THRESHOLD: float = float(
-        os.getenv("AUDIENCE_OVERLAP_THRESHOLD", "25")
-    )
+    AUDIENCE_OVERLAP_THRESHOLD: float = float(os.getenv("AUDIENCE_OVERLAP_THRESHOLD", "25"))
 
     # Budget pacing
     BUDGET_PACING_MIN: float = float(os.getenv("BUDGET_PACING_MIN", "0.8"))
@@ -72,12 +67,8 @@ class Config:
 
     # System settings
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-    ENABLE_EMAIL_ALERTS: bool = (
-        os.getenv("ENABLE_EMAIL_ALERTS", "true").lower() == "true"
-    )
-    ENABLE_SLACK_ALERTS: bool = (
-        os.getenv("ENABLE_SLACK_ALERTS", "false").lower() == "true"
-    )
+    ENABLE_EMAIL_ALERTS: bool = os.getenv("ENABLE_EMAIL_ALERTS", "true").lower() == "true"
+    ENABLE_SLACK_ALERTS: bool = os.getenv("ENABLE_SLACK_ALERTS", "false").lower() == "true"
 
     @classmethod
     def validate(cls) -> tuple[bool, list[str]]:
@@ -129,12 +120,8 @@ class Config:
             return value[:show_chars] + "*" * (len(value) - show_chars)
 
         print(f"\nMeta API:")
-        print(
-            f"  Ad Account ID: {cls.AD_ACCOUNT_ID if not hide_sensitive else mask(cls.AD_ACCOUNT_ID)}"
-        )
-        print(
-            f"  Access Token: {mask(cls.ACCESS_TOKEN) if hide_sensitive else cls.ACCESS_TOKEN}"
-        )
+        print(f"  Ad Account ID: {cls.AD_ACCOUNT_ID if not hide_sensitive else mask(cls.AD_ACCOUNT_ID)}")
+        print(f"  Access Token: {mask(cls.ACCESS_TOKEN) if hide_sensitive else cls.ACCESS_TOKEN}")
 
         print(f"\nNotifications:")
         print(f"  Email: {cls.EMAIL_ADDRESS}")

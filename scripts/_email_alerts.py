@@ -3,12 +3,12 @@ Email Alert Handler for Meta Ads Quality Control
 Sends email notifications for critical issues
 """
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from typing import List, Dict, Optional
 import logging
+import smtplib
 from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Dict, List, Optional
 
 from _config import Config
 
@@ -221,9 +221,7 @@ class EmailAlertHandler:
                 "Content-Type": "application/json",
             }
             data = {
-                "personalizations": [
-                    {"to": [{"email": self.email_address}], "subject": subject}
-                ],
+                "personalizations": [{"to": [{"email": self.email_address}], "subject": subject}],
                 "from": {
                     "email": "noreply@empireamplify.com.au",
                     "name": "Meta Ads Quality Control",
@@ -237,9 +235,7 @@ class EmailAlertHandler:
                 logger.info("Email sent successfully via SendGrid")
                 return True
             else:
-                logger.error(
-                    f"SendGrid API error: {response.status_code} - {response.text}"
-                )
+                logger.error(f"SendGrid API error: {response.status_code} - {response.text}")
                 return False
 
         except Exception as e:
@@ -280,9 +276,7 @@ class EmailAlertHandler:
 
         all_issues = critical_issues + high_issues
 
-        return self.send_alert(
-            subject=subject, body=body, issues=all_issues, health_score=health_score
-        )
+        return self.send_alert(subject=subject, body=body, issues=all_issues, health_score=health_score)
 
     def send_critical_alert(
         self,

@@ -8,18 +8,18 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 
 from _config import Config
+from _email_alerts import EmailAlertHandler
 from _meta_api_client import MetaAPIClient
 from _shared_utilities import (
-    calculate_frequency,
     calculate_cpa,
-    calculate_roas,
     calculate_ctr,
+    calculate_frequency,
     calculate_health_score,
+    calculate_roas,
+    categorize_issue,
     extract_metric_from_actions,
     extract_value_from_action_values,
-    categorize_issue,
 )
-from _email_alerts import EmailAlertHandler
 from _sheets_writer import GoogleSheetsWriter
 
 # Configure logging
@@ -71,9 +71,7 @@ def run_comprehensive_quality_check() -> Dict:
 
     # Audit 2: Campaign Structure (20 points)
     logger.info("Auditing campaign structure...")
-    campaign_score, campaign_issues, campaign_data = audit_campaign_structure(
-        api_client
-    )
+    campaign_score, campaign_issues, campaign_data = audit_campaign_structure(api_client)
     results["component_scores"]["campaign_structure"] = campaign_score
     results["issues"].extend(campaign_issues)
     results["campaigns"] = campaign_data
@@ -123,9 +121,7 @@ def run_comprehensive_quality_check() -> Dict:
     high_issues = [i for i in results["issues"] if i["severity"] == "high"]
 
     # Log summary
-    logger.info(
-        f"Comprehensive audit complete. Health Score: {results['health_score']}/100 ({results['grade']})"
-    )
+    logger.info(f"Comprehensive audit complete. Health Score: {results['health_score']}/100 ({results['grade']})")
     logger.info(f"Total issues found: {len(results['issues'])}")
     logger.info(f"  Critical: {len(critical_issues)}")
     logger.info(f"  High: {len(high_issues)}")
@@ -150,9 +146,7 @@ def run_comprehensive_quality_check() -> Dict:
             issues_summary={
                 "critical": len(critical_issues),
                 "high": len(high_issues),
-                "medium": len(
-                    [i for i in results["issues"] if i["severity"] == "medium"]
-                ),
+                "medium": len([i for i in results["issues"] if i["severity"] == "medium"]),
                 "low": len([i for i in results["issues"] if i["severity"] == "low"]),
             },
             last_run=results["timestamp"],
@@ -237,9 +231,7 @@ def audit_campaign_structure(
             }
 
             # Get insights
-            insights = api_client.get_insights(
-                level="campaign", object_id=campaign["id"], time_range=time_range
-            )
+            insights = api_client.get_insights(level="campaign", object_id=campaign["id"], time_range=time_range)
 
             if insights:
                 insight = insights[0]
@@ -278,10 +270,7 @@ def audit_campaign_structure(
                 campaign_issues.append("No budget set")
 
             # Check special ad categories if required
-            if (
-                campaign.get("special_ad_categories")
-                and not campaign["special_ad_categories"]
-            ):
+            if campaign.get("special_ad_categories") and not campaign["special_ad_categories"]:
                 campaign_issues.append("Special categories not set")
 
             if campaign_issues:
@@ -322,9 +311,7 @@ def audit_creative_health(
             }
 
             # Get insights
-            insights = api_client.get_insights(
-                level="ad", object_id=ad["id"], time_range=time_range
-            )
+            insights = api_client.get_insights(level="ad", object_id=ad["id"], time_range=time_range)
 
             if insights:
                 insight = insights[0]
@@ -409,9 +396,7 @@ def audit_audience_quality(
                         adset_info["issues"].append("Audience too broad")
 
             # Get performance
-            insights = api_client.get_insights(
-                level="adset", object_id=adset["id"], time_range=time_range
-            )
+            insights = api_client.get_insights(level="adset", object_id=adset["id"], time_range=time_range)
 
             if insights:
                 insight = insights[0]
@@ -420,9 +405,7 @@ def audit_audience_quality(
                 adset_info["results"] = extract_metric_from_actions(actions, "purchase")
 
                 if adset_info["results"] > 0:
-                    adset_info["cost_per_result"] = (
-                        adset_info["spend"] / adset_info["results"]
-                    )
+                    adset_info["cost_per_result"] = adset_info["spend"] / adset_info["results"]
 
             adset_data.append(adset_info)
 
@@ -488,9 +471,7 @@ def audit_conversion_tracking(api_client: MetaAPIClient) -> Tuple[float, List[Di
     return max(0, score), issues
 
 
-def audit_performance(
-    api_client: MetaAPIClient, campaigns: List[Dict]
-) -> Tuple[float, List[Dict]]:
+def audit_performance(api_client: MetaAPIClient, campaigns: List[Dict]) -> Tuple[float, List[Dict]]:
     """Audit performance against targets (10 points max)"""
     score = 10.0
     issues = []

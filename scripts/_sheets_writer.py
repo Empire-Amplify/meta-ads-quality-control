@@ -3,14 +3,14 @@ Google Sheets Writer for Meta Ads Quality Control
 Writes results to Google Sheets for reporting
 """
 
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from _config import Config
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from typing import List, Dict, Any, Optional
-import logging
-from datetime import datetime
-
-from _config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +45,7 @@ class GoogleSheetsWriter:
                 scopes=["https://www.googleapis.com/auth/spreadsheets"],
             )
             self.service = build("sheets", "v4", credentials=credentials)
-            logger.info(
-                f"Initialized Google Sheets writer for spreadsheet: {self.spreadsheet_id}"
-            )
+            logger.info(f"Initialized Google Sheets writer for spreadsheet: {self.spreadsheet_id}")
         except Exception as e:
             logger.error(f"Error initializing Google Sheets: {e}")
             self.service = None
@@ -344,9 +342,7 @@ class GoogleSheetsWriter:
             logger.error(f"Error writing issues log: {e}")
             return False
 
-    def _write_to_sheet(
-        self, sheet_name: str, data: List[List[Any]], range_start: str = "A1"
-    ) -> bool:
+    def _write_to_sheet(self, sheet_name: str, data: List[List[Any]], range_start: str = "A1") -> bool:
         """
         Write data to specific sheet
 
@@ -398,23 +394,15 @@ class GoogleSheetsWriter:
         """
         try:
             # Get existing sheets
-            sheet_metadata = (
-                self.service.spreadsheets()
-                .get(spreadsheetId=self.spreadsheet_id)
-                .execute()
-            )
+            sheet_metadata = self.service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
 
             sheets = sheet_metadata.get("sheets", [])
             sheet_names = [sheet["properties"]["title"] for sheet in sheets]
 
             if sheet_name not in sheet_names:
                 # Create sheet
-                request_body = {
-                    "requests": [{"addSheet": {"properties": {"title": sheet_name}}}]
-                }
-                self.service.spreadsheets().batchUpdate(
-                    spreadsheetId=self.spreadsheet_id, body=request_body
-                ).execute()
+                request_body = {"requests": [{"addSheet": {"properties": {"title": sheet_name}}}]}
+                self.service.spreadsheets().batchUpdate(spreadsheetId=self.spreadsheet_id, body=request_body).execute()
                 logger.info(f"Created new sheet: {sheet_name}")
 
             return True
@@ -435,11 +423,7 @@ class GoogleSheetsWriter:
                             "startRowIndex": 0,
                             "endRowIndex": 1,
                         },
-                        "cell": {
-                            "userEnteredFormat": {
-                                "textFormat": {"bold": True, "fontSize": 14}
-                            }
-                        },
+                        "cell": {"userEnteredFormat": {"textFormat": {"bold": True, "fontSize": 14}}},
                         "fields": "userEnteredFormat.textFormat",
                     }
                 },
@@ -457,9 +441,7 @@ class GoogleSheetsWriter:
             ]
 
             body = {"requests": requests}
-            self.service.spreadsheets().batchUpdate(
-                spreadsheetId=self.spreadsheet_id, body=body
-            ).execute()
+            self.service.spreadsheets().batchUpdate(spreadsheetId=self.spreadsheet_id, body=body).execute()
 
             return True
         except Exception as e:
@@ -469,11 +451,7 @@ class GoogleSheetsWriter:
     def _get_sheet_id(self, sheet_name: str) -> int:
         """Get sheet ID by name"""
         try:
-            sheet_metadata = (
-                self.service.spreadsheets()
-                .get(spreadsheetId=self.spreadsheet_id)
-                .execute()
-            )
+            sheet_metadata = self.service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
 
             sheets = sheet_metadata.get("sheets", [])
             for sheet in sheets:
