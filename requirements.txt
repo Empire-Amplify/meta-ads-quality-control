@@ -1,41 +1,44 @@
 # Meta Marketing API
-facebook-business>=20.0.0
+facebook-business~=20.0.0
 
 # Google Sheets integration
-google-api-python-client>=2.100.0
-google-auth-httplib2>=0.2.0
-google-auth-oauthlib>=1.1.0
-gspread>=6.0.0
-oauth2client>=4.1.3
+google-api-python-client~=2.100.0
+google-auth-httplib2~=0.2.0
+google-auth-oauthlib~=1.1.0
+gspread~=6.0.0
+oauth2client~=4.1.3
 
 # Data processing
-pandas>=2.1.0
-numpy>=1.24.0
-openpyxl>=3.1.0
+pandas~=2.1.0
+numpy~=1.24.0
+openpyxl~=3.1.0
 
 # HTTP requests
-requests>=2.31.0
-urllib3>=2.0.0
+requests~=2.31.0
+urllib3~=2.0.0
 
 # Environment variables
-python-dotenv>=1.0.0
+python-dotenv~=1.0.0
 
 # Email notifications
-sendgrid>=6.11.0  # Optional: for SendGrid email
+sendgrid~=6.11.0  # Optional: for SendGrid email
 
 
 # Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pytest-mock>=3.12.0
+pytest~=7.4.0
+pytest-cov~=4.1.0
+pytest-mock~=3.12.0
 
 # Code quality
-black>=23.9.0
-flake8>=6.1.0
-isort>=5.12.0
-mypy>=1.5.0
+black~=23.9.0
+flake8~=6.1.0
+isort~=5.12.0
+mypy~=1.5.0
+
+# Security scanning
+bandit~=1.7.0
 
 # Utilities
-pytz>=2023.3
-python-dateutil>=2.8.2
-colorama>=0.4.6  # For colored terminal output
+pytz~=2023.3
+python-dateutil~=2.8.2
+colorama~=0.4.6  # For colored terminal output

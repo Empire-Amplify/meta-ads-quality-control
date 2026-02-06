@@ -4,8 +4,9 @@ Wrapper for Meta Marketing API operations
 """
 
 import logging
+import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from _config import Config
 from facebook_business.adobjects.ad import Ad
@@ -14,6 +15,7 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApi
+from facebook_business.exceptions import FacebookRequestError
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +42,67 @@ class MetaAPIClient:
         self.account = AdAccount(self.account_id)
 
         logger.info(f"Initialized Meta API client for account: {self.account_id}")
+        self._last_call_time: float = 0.0
+
+    def _rate_limit(self) -> None:
+        """Enforce minimum interval between API calls to avoid rate limiting."""
+        elapsed = time.time() - self._last_call_time
+        min_interval = 0.5  # seconds between calls
+        if elapsed < min_interval:
+            time.sleep(min_interval - elapsed)
+        self._last_call_time = time.time()
+
+    def _call_with_retry(
+        self,
+        func: Callable[..., Any],
+        max_retries: int = 3,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        Execute an API call with rate limiting and exponential backoff.
+
+        Args:
+            func: API method to call
+            max_retries: Maximum number of retry attempts
+            **kwargs: Arguments to pass to the API method
+
+        Returns:
+            API response
+
+        Raises:
+            Exception: If all retries are exhausted
+        """
+        self._rate_limit()
+        for attempt in range(max_retries + 1):
+            try:
+                return func(**kwargs)
+            except FacebookRequestError as e:
+                if attempt == max_retries:
+                    raise
+                code = e.api_error_code()
+                if code in (17, 4, 32):  # Rate limit / too many calls
+                    wait = min(300, (2 ** attempt) * 30)
+                    logger.warning(
+                        f"Rate limited (attempt {attempt + 1}/{max_retries}), waiting {wait}s"
+                    )
+                elif e.http_status() >= 500:
+                    wait = (2 ** attempt) * 5
+                    logger.warning(
+                        f"Server error {e.http_status()} (attempt {attempt + 1}/{max_retries}), "
+                        f"retrying in {wait}s"
+                    )
+                else:
+                    raise  # Non-retryable client error
+                time.sleep(wait)
+            except (ConnectionError, TimeoutError) as e:
+                if attempt == max_retries:
+                    raise
+                wait = (2 ** attempt) * 2
+                logger.warning(
+                    f"Connection error (attempt {attempt + 1}/{max_retries}): {e}, "
+                    f"retrying in {wait}s"
+                )
+                time.sleep(wait)
 
     def get_campaigns(self, statuses: Optional[List[str]] = None, fields: Optional[List[str]] = None) -> List[Dict]:
         """
@@ -71,7 +134,9 @@ class MetaAPIClient:
             params["effective_status"] = statuses
 
         try:
-            campaigns = self.account.get_campaigns(fields=fields, params=params)
+            campaigns = self._call_with_retry(
+                self.account.get_campaigns, fields=fields, params=params
+            )
             return [dict(campaign) for campaign in campaigns]
         except Exception as e:
             logger.error(f"Error fetching campaigns: {e}")
@@ -118,9 +183,13 @@ class MetaAPIClient:
         try:
             if campaign_id:
                 campaign = Campaign(campaign_id)
-                adsets = campaign.get_ad_sets(fields=fields, params=params)
+                adsets = self._call_with_retry(
+                    campaign.get_ad_sets, fields=fields, params=params
+                )
             else:
-                adsets = self.account.get_ad_sets(fields=fields, params=params)
+                adsets = self._call_with_retry(
+                    self.account.get_ad_sets, fields=fields, params=params
+                )
 
             return [dict(adset) for adset in adsets]
         except Exception as e:
@@ -165,9 +234,13 @@ class MetaAPIClient:
         try:
             if adset_id:
                 adset = AdSet(adset_id)
-                ads = adset.get_ads(fields=fields, params=params)
+                ads = self._call_with_retry(
+                    adset.get_ads, fields=fields, params=params
+                )
             else:
-                ads = self.account.get_ads(fields=fields, params=params)
+                ads = self._call_with_retry(
+                    self.account.get_ads, fields=fields, params=params
+                )
 
             return [dict(ad) for ad in ads]
         except Exception as e:
@@ -238,10 +311,13 @@ class MetaAPIClient:
                     obj = Ad(object_id)
                 else:
                     obj = self.account
-                insights = obj.get_insights(fields=fields, params=params)
+                insights = self._call_with_retry(
+                    obj.get_insights, fields=fields, params=params
+                )
             else:
-                # Get insights at account level
-                insights = self.account.get_insights(fields=fields, params=params)
+                insights = self._call_with_retry(
+                    self.account.get_insights, fields=fields, params=params
+                )
 
             return [dict(insight) for insight in insights]
         except Exception as e:
@@ -267,7 +343,9 @@ class MetaAPIClient:
                     "is_archived",
                 ]
             }
-            events = self.account.get_custom_conversions(params=params)
+            events = self._call_with_retry(
+                self.account.get_custom_conversions, params=params
+            )
             return [dict(event) for event in events]
         except Exception as e:
             logger.error(f"Error fetching conversion events: {e}")
@@ -290,7 +368,9 @@ class MetaAPIClient:
                     "last_fired_time",
                 ]
             }
-            pixels = self.account.get_ads_pixels(params=params)
+            pixels = self._call_with_retry(
+                self.account.get_ads_pixels, params=params
+            )
             return [dict(pixel) for pixel in pixels]
         except Exception as e:
             logger.error(f"Error fetching pixels: {e}")
@@ -312,7 +392,9 @@ class MetaAPIClient:
                 "targeting_spec": targeting,
                 "optimization_goal": optimization_goal,
             }
-            estimate = self.account.get_delivery_estimate(params=params)
+            estimate = self._call_with_retry(
+                self.account.get_delivery_estimate, params=params
+            )
             return dict(estimate[0]) if estimate else {}
         except Exception as e:
             logger.error(f"Error fetching delivery estimate: {e}")
@@ -336,7 +418,9 @@ class MetaAPIClient:
                 "balance",
                 "spend_cap",
             ]
-            account_info = self.account.api_get(fields=fields)
+            account_info = self._call_with_retry(
+                self.account.api_get, fields=fields
+            )
             return dict(account_info)
         except Exception as e:
             logger.error(f"Error checking account quality: {e}")
