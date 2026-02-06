@@ -3,6 +3,7 @@ Configuration Management for Meta Ads Quality Control
 Loads settings from environment variables with validation
 """
 
+import logging
 import os
 from typing import List, Optional, Tuple
 
@@ -10,6 +11,26 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+
+def _safe_int(value: str, default: int) -> int:
+    """Safely parse an integer from string, returning default on failure."""
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        logger.warning(f"Invalid integer value '{value}', using default {default}")
+        return default
+
+
+def _safe_float(value: str, default: float) -> float:
+    """Safely parse a float from string, returning default on failure."""
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        logger.warning(f"Invalid float value '{value}', using default {default}")
+        return default
 
 
 class Config:
@@ -32,43 +53,36 @@ class Config:
 
     # SMTP fallback
     SMTP_HOST: str = os.getenv("SMTP_HOST", "localhost")
-    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "25"))
+    SMTP_PORT: int = _safe_int(os.getenv("SMTP_PORT", "25"), 25)
+    SMTP_USE_TLS: bool = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
 
     # Slack notifications
     SLACK_WEBHOOK_URL: str = os.getenv("SLACK_WEBHOOK_URL", "")
 
     # Quality thresholds
-    FREQUENCY_ALERT_THRESHOLD: float = float(os.getenv("FREQUENCY_ALERT_THRESHOLD", "2.5"))
-    FREQUENCY_CRITICAL_THRESHOLD: float = float(os.getenv("FREQUENCY_CRITICAL_THRESHOLD", "3.5"))
-    CPA_THRESHOLD: float = float(os.getenv("CPA_THRESHOLD", "50"))
-    MIN_ROAS: float = float(os.getenv("MIN_ROAS", "2.0"))
-    MIN_CTR: float = float(os.getenv("MIN_CTR", "0.8"))
-    MIN_DAILY_SPEND: float = float(os.getenv("MIN_DAILY_SPEND", "10"))
+    FREQUENCY_ALERT_THRESHOLD: float = _safe_float(os.getenv("FREQUENCY_ALERT_THRESHOLD", "2.5"), 2.5)
+    FREQUENCY_CRITICAL_THRESHOLD: float = _safe_float(os.getenv("FREQUENCY_CRITICAL_THRESHOLD", "3.5"), 3.5)
+    CPA_THRESHOLD: float = _safe_float(os.getenv("CPA_THRESHOLD", "50"), 50.0)
+    MIN_ROAS: float = _safe_float(os.getenv("MIN_ROAS", "2.0"), 2.0)
+    MIN_CTR: float = _safe_float(os.getenv("MIN_CTR", "0.8"), 0.8)
+    MIN_DAILY_SPEND: float = _safe_float(os.getenv("MIN_DAILY_SPEND", "10"), 10.0)
 
     # Audience thresholds
-    MIN_AUDIENCE_SIZE: int = int(os.getenv("MIN_AUDIENCE_SIZE", "1000"))
-    MAX_AUDIENCE_SIZE: int = int(os.getenv("MAX_AUDIENCE_SIZE", "50000000"))
-    AUDIENCE_OVERLAP_THRESHOLD: float = float(os.getenv("AUDIENCE_OVERLAP_THRESHOLD", "25"))
+    MIN_AUDIENCE_SIZE: int = _safe_int(os.getenv("MIN_AUDIENCE_SIZE", "1000"), 1000)
+    MAX_AUDIENCE_SIZE: int = _safe_int(os.getenv("MAX_AUDIENCE_SIZE", "50000000"), 50000000)
 
     # Budget pacing
-    BUDGET_PACING_MIN: float = float(os.getenv("BUDGET_PACING_MIN", "0.8"))
-    BUDGET_PACING_MAX: float = float(os.getenv("BUDGET_PACING_MAX", "1.2"))
+    BUDGET_PACING_MIN: float = _safe_float(os.getenv("BUDGET_PACING_MIN", "0.8"), 0.8)
+    BUDGET_PACING_MAX: float = _safe_float(os.getenv("BUDGET_PACING_MAX", "1.2"), 1.2)
 
     # Analysis settings
-    DAYS_TO_ANALYZE: int = int(os.getenv("DAYS_TO_ANALYZE", "7"))
-    MIN_SPEND_FOR_ANALYSIS: float = float(os.getenv("MIN_SPEND_FOR_ANALYSIS", "50"))
-
-    # Anomaly detection
-    ANOMALY_THRESHOLD_SPEND: float = float(os.getenv("ANOMALY_THRESHOLD_SPEND", "0.5"))
-    ANOMALY_THRESHOLD_CPA: float = float(os.getenv("ANOMALY_THRESHOLD_CPA", "0.5"))
-    ANOMALY_THRESHOLD_ROAS: float = float(os.getenv("ANOMALY_THRESHOLD_ROAS", "0.3"))
-    ANOMALY_THRESHOLD_CTR: float = float(os.getenv("ANOMALY_THRESHOLD_CTR", "0.5"))
-
-    # Match quality
-    MIN_MATCH_QUALITY: float = float(os.getenv("MIN_MATCH_QUALITY", "7.0"))
+    DAYS_TO_ANALYZE: int = _safe_int(os.getenv("DAYS_TO_ANALYZE", "7"), 7)
+    MIN_SPEND_FOR_ANALYSIS: float = _safe_float(os.getenv("MIN_SPEND_FOR_ANALYSIS", "50"), 50.0)
 
     # Creative age
-    CREATIVE_REFRESH_AGE: int = int(os.getenv("CREATIVE_REFRESH_AGE", "30"))
+    CREATIVE_REFRESH_AGE: int = _safe_int(os.getenv("CREATIVE_REFRESH_AGE", "30"), 30)
 
     # System settings
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")

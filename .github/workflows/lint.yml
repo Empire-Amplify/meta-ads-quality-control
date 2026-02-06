@@ -71,7 +71,7 @@ jobs:
 
     - name: Run tests
       run: |
-        if [ -d tests ]; then pytest tests/ -v --cov=scripts --cov-report=term-missing; fi
+        if [ -d tests ]; then pytest tests/ -v --cov=scripts --cov-report=term-missing --cov-fail-under=70; fi
 
   notify-n8n:
     name: Trigger N8N Workflow Sync

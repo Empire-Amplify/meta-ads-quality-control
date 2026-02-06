@@ -269,6 +269,10 @@ class EmailAlertHandler:
             msg.attach(MIMEText(html_body, "html"))
 
             with smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT) as server:
+                if Config.SMTP_USE_TLS:
+                    server.starttls()
+                if Config.SMTP_USERNAME and Config.SMTP_PASSWORD:
+                    server.login(Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
                 server.sendmail(Config.SENDGRID_FROM_EMAIL, [self.email_address], msg.as_string())
 
             logger.info("Email sent successfully via SMTP")
