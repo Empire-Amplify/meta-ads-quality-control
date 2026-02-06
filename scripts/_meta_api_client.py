@@ -80,7 +80,7 @@ class MetaAPIClient:
                 if attempt == max_retries:
                     raise
                 code = e.api_error_code()
-                if code in (17, 4, 32):  # Rate limit / too many calls
+                if code in (2, 4, 6, 17, 32):  # Rate limit / temporary / too many calls
                     wait = min(300, (2 ** attempt) * 30)
                     logger.warning(
                         f"Rate limited (attempt {attempt + 1}/{max_retries}), waiting {wait}s"
@@ -138,7 +138,7 @@ class MetaAPIClient:
                 self.account.get_campaigns, fields=fields, params=params
             )
             return [dict(campaign) for campaign in campaigns]
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error fetching campaigns: {e}")
             return []
 
@@ -192,7 +192,7 @@ class MetaAPIClient:
                 )
 
             return [dict(adset) for adset in adsets]
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error fetching ad sets: {e}")
             return []
 
@@ -243,7 +243,7 @@ class MetaAPIClient:
                 )
 
             return [dict(ad) for ad in ads]
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error fetching ads: {e}")
             return []
 
@@ -320,7 +320,7 @@ class MetaAPIClient:
                 )
 
             return [dict(insight) for insight in insights]
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error fetching insights: {e}")
             return []
 
@@ -347,7 +347,7 @@ class MetaAPIClient:
                 self.account.get_custom_conversions, params=params
             )
             return [dict(event) for event in events]
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error fetching conversion events: {e}")
             return []
 
@@ -372,7 +372,7 @@ class MetaAPIClient:
                 self.account.get_ads_pixels, params=params
             )
             return [dict(pixel) for pixel in pixels]
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error fetching pixels: {e}")
             return []
 
@@ -396,7 +396,7 @@ class MetaAPIClient:
                 self.account.get_delivery_estimate, params=params
             )
             return dict(estimate[0]) if estimate else {}
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error fetching delivery estimate: {e}")
             return {}
 
@@ -422,7 +422,7 @@ class MetaAPIClient:
                 self.account.api_get, fields=fields
             )
             return dict(account_info)
-        except Exception as e:
+        except (FacebookRequestError, ConnectionError, TimeoutError) as e:
             logger.error(f"Error checking account quality: {e}")
             return {}
 

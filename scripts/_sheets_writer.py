@@ -46,7 +46,7 @@ class GoogleSheetsWriter:
             )
             self.service = build("sheets", "v4", credentials=credentials)
             logger.info(f"Initialized Google Sheets writer for spreadsheet: {self.spreadsheet_id}")
-        except Exception as e:
+        except (FileNotFoundError, ValueError) as e:
             logger.error(f"Error initializing Google Sheets: {e}")
             self.service = None
 
@@ -95,7 +95,7 @@ class GoogleSheetsWriter:
             self._format_dashboard()
 
             return True
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error writing dashboard: {e}")
             return False
 
@@ -152,7 +152,7 @@ class GoogleSheetsWriter:
             self._write_to_sheet("Campaign Health", data, "A1")
 
             return True
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error writing campaign health: {e}")
             return False
 
@@ -200,7 +200,7 @@ class GoogleSheetsWriter:
             self._write_to_sheet("Creative Fatigue", data, "A1")
 
             return True
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error writing creative fatigue: {e}")
             return False
 
@@ -248,7 +248,7 @@ class GoogleSheetsWriter:
             self._write_to_sheet("Audience Analysis", data, "A1")
 
             return True
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error writing audience analysis: {e}")
             return False
 
@@ -292,7 +292,7 @@ class GoogleSheetsWriter:
             self._write_to_sheet("Conversion Events", data, "A1")
 
             return True
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error writing conversion events: {e}")
             return False
 
@@ -338,7 +338,7 @@ class GoogleSheetsWriter:
             self._write_to_sheet("Issues Log", data, "A1")
 
             return True
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error writing issues log: {e}")
             return False
 
@@ -378,7 +378,7 @@ class GoogleSheetsWriter:
         except HttpError as e:
             logger.error(f"HTTP error writing to sheet {sheet_name}: {e}")
             return False
-        except Exception as e:
+        except (ValueError, KeyError) as e:
             logger.error(f"Error writing to sheet {sheet_name}: {e}")
             return False
 
@@ -407,7 +407,7 @@ class GoogleSheetsWriter:
 
             return True
 
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error ensuring sheet exists: {e}")
             return False
 
@@ -444,7 +444,7 @@ class GoogleSheetsWriter:
             self.service.spreadsheets().batchUpdate(spreadsheetId=self.spreadsheet_id, body=body).execute()
 
             return True
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error formatting dashboard: {e}")
             return False
 
@@ -459,6 +459,6 @@ class GoogleSheetsWriter:
                     return sheet["properties"]["sheetId"]
 
             return 0
-        except Exception as e:
+        except HttpError as e:
             logger.error(f"Error getting sheet ID: {e}")
             return 0

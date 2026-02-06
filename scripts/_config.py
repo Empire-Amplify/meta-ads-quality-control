@@ -4,7 +4,7 @@ Loads settings from environment variables with validation
 """
 
 import os
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from dotenv import load_dotenv
 
@@ -28,6 +28,11 @@ class Config:
     # Email notifications
     EMAIL_ADDRESS: str = os.getenv("EMAIL_ADDRESS", "")
     SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY", "")
+    SENDGRID_FROM_EMAIL: str = os.getenv("SENDGRID_FROM_EMAIL", "noreply@example.com")
+
+    # SMTP fallback
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "localhost")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "25"))
 
     # Slack notifications
     SLACK_WEBHOOK_URL: str = os.getenv("SLACK_WEBHOOK_URL", "")
@@ -71,7 +76,7 @@ class Config:
     ENABLE_SLACK_ALERTS: bool = os.getenv("ENABLE_SLACK_ALERTS", "false").lower() == "true"
 
     @classmethod
-    def validate(cls) -> tuple[bool, list[str]]:
+    def validate(cls) -> Tuple[bool, List[str]]:
         """
         Validate configuration settings
 
@@ -105,6 +110,12 @@ class Config:
         if cls.MAX_AUDIENCE_SIZE < cls.MIN_AUDIENCE_SIZE:
             errors.append("MAX_AUDIENCE_SIZE must be greater than MIN_AUDIENCE_SIZE")
 
+        if cls.FREQUENCY_ALERT_THRESHOLD >= cls.FREQUENCY_CRITICAL_THRESHOLD:
+            errors.append("FREQUENCY_ALERT_THRESHOLD must be less than FREQUENCY_CRITICAL_THRESHOLD")
+
+        if cls.GOOGLE_SHEETS_CREDENTIALS and not os.path.isfile(cls.GOOGLE_SHEETS_CREDENTIALS):
+            errors.append(f"Google Sheets credentials file not found: {cls.GOOGLE_SHEETS_CREDENTIALS}")
+
         return (len(errors) == 0, errors)
 
     @classmethod
@@ -117,7 +128,7 @@ class Config:
         def mask(value: str, show_chars: int = 4) -> str:
             if not value or len(value) <= show_chars:
                 return "*" * 8
-            return value[:show_chars] + "*" * (len(value) - show_chars)
+            return "*" * (len(value) - show_chars) + value[-show_chars:]
 
         print(f"\nMeta API:")
         print(f"  Ad Account ID: {cls.AD_ACCOUNT_ID if not hide_sensitive else mask(cls.AD_ACCOUNT_ID)}")

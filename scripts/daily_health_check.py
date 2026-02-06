@@ -169,7 +169,7 @@ def check_active_campaigns_spending(api_client: MetaAPIClient) -> List[Dict]:
                     )
                     issues.append(issue)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error checking campaign spending: {e}")
 
     return issues
@@ -195,7 +195,7 @@ def check_ad_disapprovals(api_client: MetaAPIClient) -> List[Dict]:
                 )
                 issues.append(issue)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error checking ad disapprovals: {e}")
 
     return issues
@@ -247,7 +247,7 @@ def check_creative_fatigue(api_client: MetaAPIClient) -> List[Dict]:
                         )
                         issues.append(issue)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error checking creative fatigue: {e}")
 
     return issues
@@ -292,7 +292,7 @@ def check_budget_exhaustion(api_client: MetaAPIClient) -> List[Dict]:
                         )
                         issues.append(issue)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error checking budget exhaustion: {e}")
 
     return issues
@@ -329,7 +329,7 @@ def check_pixel_health(api_client: MetaAPIClient) -> List[Dict]:
                     )
                     issues.append(issue)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error checking pixel health: {e}")
 
     return issues
@@ -337,7 +337,13 @@ def check_pixel_health(api_client: MetaAPIClient) -> List[Dict]:
 
 def calculate_quick_health_score(summary: Dict) -> int:
     """
-    Calculate quick health score based on issues
+    Calculate a simplified health score based on issue counts.
+
+    This is a quick heuristic used by the daily health check. It differs from
+    the comprehensive audit (comprehensive_quality_check.py) which uses weighted
+    component scores across 6 categories totaling 100 points.
+
+    Scoring: starts at 100, deducts 20 per critical, 10 per high, 5 per medium.
 
     Args:
         summary: Summary of issues by severity

@@ -5,7 +5,7 @@ Full account audit - run weekly
 
 import logging
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from _config import Config
 from _email_alerts import EmailAlertHandler
@@ -85,7 +85,7 @@ def run_comprehensive_quality_check() -> Dict:
 
     # Audit 4: Audience Quality (15 points)
     logger.info("Auditing audience quality...")
-    audience_score, audience_issues, adset_data = audit_audience_quality(api_client)
+    audience_score, audience_issues, adset_data = audit_audience_quality(api_client, campaign_data)
     results["component_scores"]["audience_quality"] = audience_score
     results["issues"].extend(audience_issues)
     results["adsets"] = adset_data
@@ -196,7 +196,7 @@ def audit_account_setup(api_client: MetaAPIClient) -> Tuple[float, List[Dict]]:
             )
             issues.append(issue)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error auditing account setup: {e}")
 
     return max(0, score), issues
@@ -216,6 +216,7 @@ def audit_campaign_structure(
 
         for campaign in campaigns:
             campaign_info = {
+                "id": campaign["id"],
                 "name": campaign["name"],
                 "status": campaign["status"],
                 "objective": campaign.get("objective", "N/A"),
@@ -279,7 +280,7 @@ def audit_campaign_structure(
 
             campaign_data.append(campaign_info)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error auditing campaign structure: {e}")
 
     return max(0, score), issues, campaign_data
@@ -342,19 +343,24 @@ def audit_creative_health(
 
             ad_data.append(ad_info)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error auditing creative health: {e}")
 
     return max(0, score), issues, ad_data
 
 
 def audit_audience_quality(
-    api_client: MetaAPIClient,
+    api_client: MetaAPIClient, campaigns: Optional[List[Dict]] = None
 ) -> Tuple[float, List[Dict], List[Dict]]:
     """Audit audience quality (15 points max)"""
     score = 15.0
     issues = []
     adset_data = []
+
+    # Build campaign ID -> name lookup
+    campaign_names = {}
+    if campaigns:
+        campaign_names = {c.get("id"): c.get("name", "Unknown") for c in campaigns if c.get("id")}
 
     try:
         adsets = api_client.get_adsets(statuses=["ACTIVE"])
@@ -362,8 +368,9 @@ def audit_audience_quality(
 
         for adset in adsets:
             adset_info = {
+                "id": adset["id"],
                 "name": adset["name"],
-                "campaign_name": "N/A",
+                "campaign_name": campaign_names.get(adset.get("campaign_id"), "N/A"),
                 "status": adset["status"],
                 "audience_size": 0,
                 "spend": 0,
@@ -409,7 +416,7 @@ def audit_audience_quality(
 
             adset_data.append(adset_info)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error auditing audience quality: {e}")
 
     return max(0, score), issues, adset_data
@@ -465,7 +472,7 @@ def audit_conversion_tracking(api_client: MetaAPIClient) -> Tuple[float, List[Di
                 }
             )
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error auditing conversion tracking: {e}")
 
     return max(0, score), issues
@@ -505,7 +512,7 @@ def audit_performance(api_client: MetaAPIClient, campaigns: List[Dict]) -> Tuple
                 )
                 issues.append(issue)
 
-    except Exception as e:
+    except (KeyError, TypeError, ValueError) as e:
         logger.error(f"Error auditing performance: {e}")
 
     return max(0, score), issues

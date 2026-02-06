@@ -23,6 +23,8 @@ class EmailAlertHandler:
         self.email_address = Config.EMAIL_ADDRESS
         self.sendgrid_api_key = Config.SENDGRID_API_KEY
         self.enabled = Config.ENABLE_EMAIL_ALERTS
+        self.slack_webhook_url = Config.SLACK_WEBHOOK_URL
+        self.slack_enabled = Config.ENABLE_SLACK_ALERTS
 
         if self.enabled and not self.email_address:
             logger.warning("Email alerts enabled but no email address configured")
@@ -55,15 +57,20 @@ class EmailAlertHandler:
             # Build email content
             html_body = self._build_html_email(body, issues, health_score)
 
-            # Send via SendGrid if configured
+            # Send via SendGrid if configured, otherwise fall back to SMTP
+            email_sent = False
             if self.sendgrid_api_key:
-                return self._send_via_sendgrid(subject, html_body)
+                email_sent = self._send_via_sendgrid(subject, html_body)
             else:
-                # Fallback to simple SMTP
-                logger.warning("SendGrid not configured, email alerts unavailable")
-                return False
+                email_sent = self._send_via_smtp(subject, html_body)
 
-        except Exception as e:
+            # Also send via Slack if configured
+            if self.slack_enabled and self.slack_webhook_url:
+                self._send_via_slack(subject, body)
+
+            return email_sent
+
+        except (ConnectionError, TimeoutError, ValueError) as e:
             logger.error(f"Error sending email alert: {e}")
             return False
 
@@ -223,7 +230,7 @@ class EmailAlertHandler:
             data = {
                 "personalizations": [{"to": [{"email": self.email_address}], "subject": subject}],
                 "from": {
-                    "email": "noreply@empireamplify.com.au",
+                    "email": Config.SENDGRID_FROM_EMAIL,
                     "name": "Meta Ads Quality Control",
                 },
                 "content": [{"type": "text/html", "value": html_body}],
@@ -238,8 +245,72 @@ class EmailAlertHandler:
                 logger.error(f"SendGrid API error: {response.status_code} - {response.text}")
                 return False
 
-        except Exception as e:
+        except (ConnectionError, TimeoutError, ValueError) as e:
             logger.error(f"Error sending via SendGrid: {e}")
+            return False
+
+    def _send_via_smtp(self, subject: str, html_body: str) -> bool:
+        """
+        Send email via SMTP as fallback when SendGrid is not configured.
+
+        Args:
+            subject: Email subject
+            html_body: HTML email body
+
+        Returns:
+            True if sent successfully
+        """
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = Config.SENDGRID_FROM_EMAIL
+            msg["To"] = self.email_address
+
+            msg.attach(MIMEText(html_body, "html"))
+
+            with smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT) as server:
+                server.sendmail(Config.SENDGRID_FROM_EMAIL, [self.email_address], msg.as_string())
+
+            logger.info("Email sent successfully via SMTP")
+            return True
+
+        except (smtplib.SMTPException, ConnectionError, OSError) as e:
+            logger.error(f"Error sending via SMTP: {e}")
+            return False
+
+    def _send_via_slack(self, subject: str, body: str) -> bool:
+        """
+        Send notification via Slack webhook.
+
+        Args:
+            subject: Alert subject
+            body: Alert body text
+
+        Returns:
+            True if sent successfully
+        """
+        try:
+            import requests
+
+            payload = {
+                "text": subject,
+                "blocks": [
+                    {"type": "header", "text": {"type": "plain_text", "text": subject}},
+                    {"type": "section", "text": {"type": "mrkdwn", "text": body}},
+                ],
+            }
+
+            response = requests.post(self.slack_webhook_url, json=payload)
+
+            if response.status_code == 200:
+                logger.info("Slack notification sent successfully")
+                return True
+            else:
+                logger.error(f"Slack webhook error: {response.status_code}")
+                return False
+
+        except (ConnectionError, TimeoutError, ValueError) as e:
+            logger.error(f"Error sending Slack notification: {e}")
             return False
 
     def send_daily_summary(
