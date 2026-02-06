@@ -53,3 +53,17 @@ jobs:
     - name: Run tests
       run: |
         if [ -d tests ]; then pytest tests/ -v --cov=scripts --cov-report=term-missing; fi
+
+  notify-n8n:
+    name: Trigger N8N Workflow Sync
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Trigger N8N Workflow Sync
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.N8N_SYNC_TOKEN }}
+          repository: Empire-Amplify/N8N-meta-ads-quality-control
+          event-type: source-updated
+          client-payload: '{"source_repo": "${{ github.repository }}", "commit": "${{ github.sha }}"}'
