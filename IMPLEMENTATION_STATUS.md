@@ -291,7 +291,7 @@ Based on:
 
 **Questions:**
 - Email: gordon@empireamplify.com.au
-- GitHub Issues: [Create issue](https://github.com/gordongeraghty/meta-ads-quality-control/issues)
+- GitHub Issues: [Create issue](https://github.com/Empire-Amplify/meta-ads-quality-control/issues)
 
 **Contributing:**
 - Python scripts development ongoing

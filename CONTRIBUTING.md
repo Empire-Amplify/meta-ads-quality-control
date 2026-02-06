@@ -80,7 +80,7 @@ Documentation improvements are always welcome:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/meta-ads-quality-control.git
+git clone https://github.com/Empire-Amplify/meta-ads-quality-control.git
 cd meta-ads-quality-control
 
 # Create virtual environment

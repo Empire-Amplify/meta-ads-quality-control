@@ -1,6 +1,6 @@
 # Meta Ads Quality Control
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/gordongeraghty/meta-ads-quality-control/releases)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Empire-Amplify/meta-ads-quality-control/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Scripts that audit your Meta (Facebook/Instagram) advertising accounts and identify issues before they impact performance.
@@ -81,6 +81,18 @@ All Python scripts follow consistent patterns:
 - Rate limiting respect (200 calls/hour Meta API standard)
 - Configuration-driven (all credentials in `.env` file)
 - Automated testing with pytest framework
+
+### N8N Workflow Sync
+
+Changes pushed to `master` automatically sync to the [N8N-meta-ads-quality-control](https://github.com/Empire-Amplify/N8N-meta-ads-quality-control) repo via GitHub Actions `repository_dispatch`. The sync pipeline:
+
+1. `lint.yml` runs lint + test jobs on push to `master`
+2. On success, triggers `repository_dispatch` to the N8N repo
+3. N8N repo runs `sync_from_source.py` to extract config and inject JS logic
+4. `validate_n8n_workflows.py` validates the updated workflow JSON
+5. Changes are auto-committed
+
+Requires the `N8N_SYNC_TOKEN` secret (a PAT with `repo` scope) set on this repo.
 
 ---
 
@@ -245,7 +257,7 @@ Your account will now be checked daily at 9am automatically.
 **1. Clone the Repository**
 
 ```bash
-git clone https://github.com/gordongeraghty/meta-ads-quality-control.git
+git clone https://github.com/Empire-Amplify/meta-ads-quality-control.git
 cd meta-ads-quality-control
 ```
 
@@ -522,7 +534,7 @@ No. All scripts are read-only and only report issues. No modifications are made 
 ## Questions?
 
 - Email: gordon@empireamplify.com.au
-- Issues: [GitHub Issues](https://github.com/gordongeraghty/meta-ads-quality-control/issues)
+- Issues: [GitHub Issues](https://github.com/Empire-Amplify/meta-ads-quality-control/issues)
 - Meta API Docs: [Meta Marketing API](https://developers.facebook.com/docs/marketing-apis)
 
 ---

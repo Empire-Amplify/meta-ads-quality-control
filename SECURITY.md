@@ -18,7 +18,7 @@ We take security seriously. If you discover a security vulnerability, please hel
 
 Instead:
 
-1. **Email**: security@yourdomain.com (or create a security advisory on GitHub)
+1. **Email**: gordon@empireamplify.com.au (or create a security advisory on GitHub)
 2. **Include**:
    - Description of the vulnerability
    - Steps to reproduce the issue

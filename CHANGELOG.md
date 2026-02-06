@@ -48,5 +48,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No hard-coded credentials
 - Secure email handling
 
-[Unreleased]: https://github.com/yourusername/meta-ads-quality-control/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/yourusername/meta-ads-quality-control/releases/tag/v1.0.0
+[Unreleased]: https://github.com/Empire-Amplify/meta-ads-quality-control/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Empire-Amplify/meta-ads-quality-control/releases/tag/v1.0.0

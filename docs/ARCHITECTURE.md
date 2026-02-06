@@ -765,6 +765,51 @@ flowchart TD
 
 ---
 
+## N8N Workflow Sync Pipeline
+
+This repo automatically syncs quality check logic to the [N8N-meta-ads-quality-control](https://github.com/Empire-Amplify/N8N-meta-ads-quality-control) repo for use as an importable n8n workflow.
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant Source as meta-ads-quality-control
+    participant GHA as GitHub Actions
+    participant N8N as N8N-meta-ads-quality-control
+
+    Dev->>Source: Push to master
+    Source->>GHA: lint.yml triggers
+    GHA->>GHA: Run lint + test jobs
+    GHA->>N8N: repository_dispatch (source-updated)
+    Note over GHA,N8N: Uses N8N_SYNC_TOKEN secret
+
+    N8N->>GHA: sync-workflows.yml triggers
+    GHA->>Source: Checkout source repo
+    GHA->>N8N: Checkout N8N repo
+    GHA->>GHA: Run sync_from_source.py
+    Note over GHA: Extract config from _config.py<br/>Inject JS logic into workflow JSON
+
+    GHA->>GHA: Run validate_n8n_workflows.py
+    Note over GHA: Validate JSON structure<br/>Check node connections<br/>Verify $('NodeName') refs
+
+    GHA->>N8N: Commit & push changes
+```
+
+### Sync Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `lint.yml` (notify-n8n job) | `.github/workflows/lint.yml` | Triggers dispatch after CI passes |
+| `sync-workflows.yml` | N8N repo `.github/workflows/` | Orchestrates the sync process |
+| `sync_from_source.py` | N8N repo root | Extracts config, injects JS logic |
+| `validate_n8n_workflows.py` | N8N repo root | Validates workflow JSON integrity |
+| `meta_quality_analysis.js` | N8N repo `logic/` | JS quality engine (injected into workflow) |
+
+### Config Extraction
+
+The sync script uses regex to extract 22 configuration values from `scripts/_config.py` and injects them as a `SOURCE_CONFIG` object into the n8n Code node. This ensures threshold values (frequency alerts, CPA limits, ROAS minimums, audience sizes) stay in sync.
+
+---
+
 ## Future Architecture Enhancements
 
 ```mermaid
@@ -902,6 +947,6 @@ For implementation details and guides:
 
 ---
 
-**Last Updated:** January 28, 2026
+**Last Updated:** February 6, 2026
 **Version:** 1.0.0
 **Maintained By:** Gordon Geraghty | Empire Amplify
