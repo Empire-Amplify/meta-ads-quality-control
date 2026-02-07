@@ -130,8 +130,8 @@ function runFullQualityAudit() {
     Logger.log('✓ Full Quality Audit complete. Health Score: ' + healthScore.total + '/100');
     ui.alert('Audit Complete',
              'Health Score: ' + healthScore.total + '/100\n\n' +
-             'Critical Issues: ' + countByGravity(issues, 'CRITICAL') + '\n' +
-             'High Priority: ' + countByGravity(issues, 'HIGH') + '\n\n' +
+             'Critical Issues: ' + countBySeverity(issues, 'CRITICAL') + '\n' +
+             'High Priority: ' + countBySeverity(issues, 'HIGH') + '\n\n' +
              'Check the Dashboard tab for details.',
              ui.ButtonSet.OK);
 
@@ -318,6 +318,28 @@ function fetchAccountData() {
   return data;
 }
 
+function fetchAllPages(url) {
+  var allData = [];
+  var nextUrl = url;
+  var maxPages = 10;
+  var page = 0;
+
+  while (nextUrl && page < maxPages) {
+    var response = UrlFetchApp.fetch(nextUrl, {muteHttpExceptions: true});
+    var data = JSON.parse(response.getContentText());
+
+    if (data.error) {
+      throw new Error('API Error: ' + data.error.message);
+    }
+
+    allData = allData.concat(data.data || []);
+    nextUrl = (data.paging && data.paging.next) ? data.paging.next : null;
+    page++;
+  }
+
+  return allData;
+}
+
 function fetchCampaigns() {
   var fields = 'name,status,objective,daily_budget,lifetime_budget,budget_remaining,created_time,start_time,stop_time';
   var url = 'https://graph.facebook.com/v21.0/' + CONFIG.AD_ACCOUNT_ID +
@@ -326,15 +348,10 @@ function fetchCampaigns() {
             '&limit=100';
 
   var campaigns = [];
-  var response = UrlFetchApp.fetch(url, {muteHttpExceptions: true});
-  var data = JSON.parse(response.getContentText());
-
-  if (data.error) {
-    throw new Error('API Error: ' + data.error.message);
-  }
+  var rawCampaigns = fetchAllPages(url);
 
   // Get insights for each campaign
-  data.data.forEach(function(campaign) {
+  rawCampaigns.forEach(function(campaign) {
     var insights = fetchCampaignInsights(campaign.id);
     campaign.spend = insights.spend || 0;
     campaign.impressions = insights.impressions || 0;
@@ -350,11 +367,13 @@ function fetchCampaigns() {
 
 function fetchCampaignInsights(campaignId) {
   var today = Utilities.formatDate(new Date(), 'GMT', 'yyyy-MM-dd');
-  var dateRange = CONFIG.DAYS_TO_ANALYZE + ' days ago';
+  var sinceDate = new Date();
+  sinceDate.setDate(sinceDate.getDate() - CONFIG.DAYS_TO_ANALYZE);
+  var since = Utilities.formatDate(sinceDate, 'GMT', 'yyyy-MM-dd');
 
   var url = 'https://graph.facebook.com/v21.0/' + campaignId +
-            '/insights?fields=spend,impressions,clicks,ctr,cpc,actions,cost_per_action_type' +
-            '&time_range={"since":"' + dateRange + '","until":"' + today + '"}' +
+            '/insights?fields=spend,impressions,clicks,ctr,cpc,actions,action_values,cost_per_action_type' +
+            '&time_range={"since":"' + since + '","until":"' + today + '"}' +
             '&access_token=' + CONFIG.ACCESS_TOKEN;
 
   try {
@@ -366,10 +385,10 @@ function fetchCampaignInsights(campaignId) {
 
       // Calculate ROAS if purchase data available
       var roas = 0;
-      if (insights.actions) {
-        var purchases = insights.actions.find(a => a.action_type === 'purchase');
-        if (purchases && insights.spend > 0) {
-          roas = parseFloat(purchases.value || 0) / parseFloat(insights.spend);
+      if (insights.action_values) {
+        var purchaseValue = insights.action_values.find(a => a.action_type === 'purchase');
+        if (purchaseValue && parseFloat(insights.spend) > 0) {
+          roas = parseFloat(purchaseValue.value || 0) / parseFloat(insights.spend);
         }
       }
       insights.roas = roas;
@@ -390,14 +409,7 @@ function fetchAdSets() {
             '&access_token=' + CONFIG.ACCESS_TOKEN +
             '&limit=500';
 
-  var response = UrlFetchApp.fetch(url, {muteHttpExceptions: true});
-  var data = JSON.parse(response.getContentText());
-
-  if (data.error) {
-    throw new Error('API Error: ' + data.error.message);
-  }
-
-  return data.data || [];
+  return fetchAllPages(url);
 }
 
 function fetchAds() {
@@ -407,25 +419,20 @@ function fetchAds() {
             '&access_token=' + CONFIG.ACCESS_TOKEN +
             '&limit=500';
 
-  var response = UrlFetchApp.fetch(url, {muteHttpExceptions: true});
-  var data = JSON.parse(response.getContentText());
-
-  if (data.error) {
-    throw new Error('API Error: ' + data.error.message);
-  }
-
-  return data.data || [];
+  return fetchAllPages(url);
 }
 
 function fetchAdsWithInsights() {
   var ads = fetchAds();
   var today = Utilities.formatDate(new Date(), 'GMT', 'yyyy-MM-dd');
-  var dateRange = CONFIG.DAYS_TO_ANALYZE + ' days ago';
+  var sinceDate = new Date();
+  sinceDate.setDate(sinceDate.getDate() - CONFIG.DAYS_TO_ANALYZE);
+  var since = Utilities.formatDate(sinceDate, 'GMT', 'yyyy-MM-dd');
 
   ads.forEach(function(ad) {
     var url = 'https://graph.facebook.com/v21.0/' + ad.id +
               '/insights?fields=impressions,clicks,ctr,frequency,spend' +
-              '&time_range={"since":"' + dateRange + '","until":"' + today + '"}' +
+              '&time_range={"since":"' + since + '","until":"' + today + '"}' +
               '&access_token=' + CONFIG.ACCESS_TOKEN;
 
     try {
@@ -625,7 +632,7 @@ function writeDashboard(healthScore, issues) {
   // Issues summary
   sheet.getRange('D3').setValue('Issues Summary').setFontWeight('bold');
   sheet.getRange('D4:E7').setValues([
-    ['Critical', countBySerity(issues, 'CRITICAL')],
+    ['Critical', countBySeverity(issues, 'CRITICAL')],
     ['High', countBySeverity(issues, 'HIGH')],
     ['Medium', countBySeverity(issues, 'MEDIUM')],
     ['Total Issues', issues.length]
@@ -846,11 +853,38 @@ function calculateAdAge(createdTime) {
 }
 
 function checkPixelHealth() {
-  // Simplified pixel check - full version would query pixel events
-  return {
-    healthy: true,
-    recommendation: 'Check Meta Events Manager for detailed pixel status'
-  };
+  try {
+    var url = 'https://graph.facebook.com/v21.0/' + CONFIG.AD_ACCOUNT_ID +
+              '/adspixels?fields=name,last_fired_time' +
+              '&access_token=' + CONFIG.ACCESS_TOKEN;
+    var response = UrlFetchApp.fetch(url, {muteHttpExceptions: true});
+    var data = JSON.parse(response.getContentText());
+
+    if (data.error) {
+      Logger.log('Pixel check API error: ' + data.error.message);
+      return {healthy: false, recommendation: 'Could not query pixel: ' + data.error.message};
+    }
+
+    var pixels = data.data || [];
+    if (pixels.length === 0) {
+      return {healthy: false, recommendation: 'No pixel found. Create one in Meta Events Manager.'};
+    }
+
+    var pixel = pixels[0];
+    if (!pixel.last_fired_time) {
+      return {healthy: false, recommendation: 'Pixel "' + pixel.name + '" has never fired. Check website installation.'};
+    }
+
+    var hoursSinceLastFire = (new Date() - new Date(pixel.last_fired_time)) / (1000 * 60 * 60);
+    if (hoursSinceLastFire > 24) {
+      return {healthy: false, recommendation: 'Pixel "' + pixel.name + '" last fired ' + Math.round(hoursSinceLastFire) + 'h ago. Check installation.'};
+    }
+
+    return {healthy: true, recommendation: 'Pixel "' + pixel.name + '" is healthy.'};
+  } catch (e) {
+    Logger.log('Pixel check error: ' + e.toString());
+    return {healthy: false, recommendation: 'Could not check pixel: ' + e.toString()};
+  }
 }
 
 function hasCriticalIssues(issues) {
@@ -903,7 +937,7 @@ function sendAlertEmail(healthScore, issues) {
   var highIssues = issues.filter(i => i.severity === 'HIGH');
 
   var body = 'Meta Ads Quality Control Alert\n\n' +
-             '=' . repeat(50) + '\n\n' +
+             '='.repeat(50) + '\n\n' +
              'Health Score: ' + healthScore.total + '/100 (' + getGrade(healthScore.total) + ')\n\n' +
              'Critical Issues: ' + criticalIssues.length + '\n' +
              'High Priority: ' + highIssues.length + '\n\n';

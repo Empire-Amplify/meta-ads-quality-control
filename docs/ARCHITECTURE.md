@@ -266,7 +266,7 @@ graph TD
     end
 
     subgraph "External APIs"
-        MetaAPI[Meta Marketing API<br/>v19.0+]
+        MetaAPI[Meta Marketing API<br/>v21.0]
         SheetsAPI[Google Sheets API<br/>v4]
         SMTPAPI[SMTP Server<br/>Email Delivery]
     end

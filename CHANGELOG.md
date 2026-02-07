@@ -12,12 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CHANGELOG.md for version tracking
 - CONTRIBUTING.md for contribution guidelines
 - SECURITY.md for security policies
+- API pagination support via `fetchAllPages()` for campaigns, ad sets, and ads
+- Real pixel health check querying `/adspixels` endpoint with `last_fired_time` validation
 
 ### Changed
+- GAS script now 1000+ lines (up from 600+)
+
 ### Fixed
-### Deprecated
-### Removed
-### Security
+- `checkPixelHealth()` no longer returns hardcoded `{healthy: true}` - now queries live pixel data
+- `countBySeverity` typo (previously `countBySerity`) corrected
+- ROAS calculation uses `action_values` instead of `actions` for revenue data
+- Date range format uses proper `yyyy-MM-dd` instead of relative string
+- README removed references to 9 non-existent Python scripts
 
 ## [1.0.0] - 2026-01-27
 

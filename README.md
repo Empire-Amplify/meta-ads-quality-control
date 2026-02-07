@@ -39,7 +39,7 @@ These scripts automate quality control checks based on industry-standard agency 
 
 ## Code Quality & Documentation
 
-**Code Status:** ✅ All 7 Python scripts syntax valid
+**Code Status:** ✅ All Python scripts syntax valid
 **Type Safety:** ✅ Comprehensive type hints throughout
 **Test Status:** ✅ 28/28 tests passing (100% pass rate)
 **Documentation:** ✅ Complete - Architecture, Contributing, Security, Changelog
@@ -78,7 +78,7 @@ All Python scripts follow consistent patterns:
 - Type hints on all functions (Python 3.8+ compatible)
 - Comprehensive docstrings with Google-style formatting
 - Error handling with exponential backoff on API calls
-- Rate limiting respect (200 calls/hour Meta API standard)
+- API pagination support for large accounts
 - Configuration-driven (all credentials in `.env` file)
 - Automated testing with pytest framework
 
@@ -298,21 +298,7 @@ CPA_THRESHOLD=50
 MIN_DAILY_SPEND=10
 ```
 
-**4. Test Connection**
-
-```bash
-python scripts/test_connection.py
-```
-
-You should see:
-```
-✓ Connected to Meta Marketing API
-✓ Ad Account: Your Account Name (act_1234567890)
-✓ Found X campaigns
-✓ Connection successful!
-```
-
-### Running Scripts
+**4. Run Scripts**
 
 **Daily Health Check:**
 ```bash
@@ -322,16 +308,6 @@ python scripts/daily_health_check.py
 **Full Quality Audit:**
 ```bash
 python scripts/comprehensive_quality_check.py
-```
-
-**Creative Fatigue Monitor:**
-```bash
-python scripts/creative_fatigue_monitor.py
-```
-
-**Audience Quality Audit:**
-```bash
-python scripts/audience_quality_audit.py
 ```
 
 ### Schedule Automation
@@ -344,7 +320,6 @@ crontab -e
 
 # Add these lines
 0 9 * * * cd /path/to/meta-ads-quality-control && python scripts/daily_health_check.py
-0 */6 * * * cd /path/to/meta-ads-quality-control && python scripts/creative_fatigue_monitor.py
 0 9 * * 1 cd /path/to/meta-ads-quality-control && python scripts/comprehensive_quality_check.py
 ```
 
@@ -352,7 +327,6 @@ crontab -e
 
 Create scheduled tasks to run:
 - `daily_health_check.py` - Daily at 9am
-- `creative_fatigue_monitor.py` - Every 6 hours
 - `comprehensive_quality_check.py` - Monday 9am
 
 **Using Cloud Functions:**
@@ -363,36 +337,22 @@ Deploy to AWS Lambda, Google Cloud Functions, or Azure Functions for serverless 
 
 ## Available Scripts
 
-### Quality Audits
+### Python Scripts
 
-| Script | Frequency | What It Checks |
-|--------|-----------|----------------|
+| Script | Frequency | What It Does |
+|--------|-----------|--------------|
 | `comprehensive_quality_check.py` | Weekly | Full account audit, generates health score 0-100 |
-| `daily_health_check.py` | Daily | Quick validation (spending, approvals, URLs, pixel) |
-| `pre_launch_validator.py` | Pre-launch | Validates campaign before going live |
+| `daily_health_check.py` | Daily | Quick validation (spending, approvals, pixel) |
 
-### Performance Monitoring
+### Utility Modules
 
-| Script | Frequency | What It Checks |
-|--------|-----------|----------------|
-| `creative_fatigue_monitor.py` | Every 6 hours | Frequency tracking, CTR decline, engagement drop |
-| `budget_pacing_monitor.py` | Every 4 hours | Spend rate, budget exhaustion risk |
-| `anomaly_alerts.py` | Every 4 hours | Statistical anomalies (spend/CPA/ROAS spikes) |
-
-### Technical Checks
-
-| Script | Frequency | What It Checks |
-|--------|-----------|----------------|
-| `pixel_health_check.py` | Daily | Pixel status, events firing, CAPI connection |
-| `conversion_tracking_audit.py` | Daily | Event match quality, attribution windows |
-
-### Analysis & Optimization
-
-| Script | Frequency | What It Checks |
-|--------|-----------|----------------|
-| `audience_quality_audit.py` | Weekly | Audience sizing, overlap, exhaustion |
-| `account_structure_audit.py` | Weekly | Naming conventions, budget strategy |
-| `performance_forecasting.py` | Weekly | Month-end projections |
+| Module | Purpose |
+|--------|---------|
+| `_config.py` | Configuration loader with threshold validation |
+| `_meta_api_client.py` | Meta Marketing API wrapper with retry/backoff |
+| `_shared_utilities.py` | Metric calculations (CPA, ROAS, CTR, frequency) |
+| `_sheets_writer.py` | Google Sheets API integration |
+| `_email_alerts.py` | Email (SendGrid/SMTP) and Slack notifications |
 
 ---
 
@@ -451,39 +411,14 @@ Date  | Severity | Type  | Campaign | Issue           | Recommendation      | St
 
 ## Recommended Schedule
 
-**For initial deployment:**
-- `daily_health_check.py` (9am daily)
-- `creative_fatigue_monitor.py` (every 6 hours)
-- `budget_pacing_monitor.py` (every 4 hours)
-
-**For established accounts:**
-- Add `comprehensive_quality_check.py` (Monday 9am)
-- Add `audience_quality_audit.py` (weekly)
-
-**For optimization:**
-- Add `performance_forecasting.py` (weekly)
-- Add `anomaly_alerts.py` (every 4 hours)
-
----
-
-## Checklists
-
-Ready-to-use QA checklists based on agency templates:
-
-- [Daily Health Check](checklists/daily-health-check.md)
-- [Weekly Maintenance](checklists/weekly-maintenance.md)
-- [Pre-Launch Campaign](checklists/pre-launch-campaign.md)
-- [Creative Refresh](checklists/creative-refresh-checklist.md)
-- [Monthly Deep Dive](checklists/monthly-deep-dive.md)
+- `daily_health_check.py` - Daily at 9am
+- `comprehensive_quality_check.py` - Weekly (Monday 9am)
 
 ---
 
 ## Documentation
 
-- [Setup Guide](docs/SETUP_GUIDE.md) - Detailed installation instructions
-- [Script Catalog](docs/SCRIPT_CATALOG.md) - Complete reference for all scripts
 - [Architecture](docs/ARCHITECTURE.md) - Technical architecture and data flow
-- [Meta vs Google Ads](docs/META_VS_GOOGLE.md) - Platform comparison
 
 ---
 
